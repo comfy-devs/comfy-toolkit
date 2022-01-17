@@ -1,0 +1,11 @@
+services:
+  nyananime-toolkit:
+    container_name: nyananime-toolkit
+    image: nyananime-toolkit:latest
+    volumes:
+      - /mnt/uwu/Torrents:/usr/src/torrents
+      - /usr/src/nyananime:/usr/src/nyananime
+    build:
+      context: ./
+      dockerfile: .docker/images/nyananime-toolkit/Dockerfile
+    tty: yes

@@ -84,11 +84,11 @@ step_transcode() {
 				echo -e "Bitrate for episode $GRAY'$entry'$RESET: $S_BITRATE Mb/s ($V_BITRATE/$A_BITRATE)"
 			done
 
-			read -p "> Minimal bitrate? [550k]: " OPT_MIN_BITRATE
+			read -p "> Minimal bitrate? (recommended: 550k) [550k]: " OPT_MIN_BITRATE
 			OPT_MIN_BITRATE=${OPT_MIN_BITRATE:-550k}
-			read -p "> Target bitrate? [1600k]: " OPT_BITRATE
+			read -p "> Target bitrate? (recommended: (average * 0.55)k) [1600k]: " OPT_BITRATE
 			OPT_BITRATE=${OPT_BITRATE:-1600k}
-			read -p "> Maximal bitrate? [2210k]: " OPT_MAX_BITRATE
+			read -p "> Maximal bitrate? (recommended: (average * 0.65)k) [2210k]: " OPT_MAX_BITRATE
 			OPT_MAX_BITRATE=${OPT_MAX_BITRATE:-2210k}
 
 			D_SCRIPT="ffmpeg-video-vp9.sh"

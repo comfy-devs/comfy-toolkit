@@ -143,14 +143,65 @@ step_transcode() {
 step_extra() {
 	clear
 	echo -e "$(echo $GRAY)Nyan Anime Toolkit - Extra$RESET"
+	read -p "> Anime ID? (ID from anilist.co): " OPT_ID
 	
 	read -p "> Download poster? (y/n) [y]: " OPT_POSTER
 	OPT_POSTER=${OPT_POSTER:-y}
-	if [ $OPT_MOVE == "y" ]; then
+	if [ $OPT_POSTER == "y" ]; then
 		read -p "> Poster URL? (URL from anilist.co): " OPT_POSTER_URL
 		wget -O /usr/src/nyananime/dest-episodes/poster_in $OPT_POSTER_URL
 		cwebp -q 90 /usr/src/nyananime/dest-episodes/poster_in -o /usr/src/nyananime/dest-episodes/poster.webp
 		rm /usr/src/nyananime/dest-episodes/poster_in
+	fi
+
+	read -p "> Generate SQL query for anime? (y/n) [y]: " OPT_SQL_ANIME
+	OPT_SQL_ANIME=${OPT_SQL_ANIME:-y}
+	if [ $OPT_SQL_ANIME == "y" ]; then
+		read -p "> Anime title?: " OPT_SQL_ANIME_TITLE
+		read -p "> Anime synopsis?: " OPT_SQL_ANIME_SYNOPSIS
+		read -p "> Anime episode count? [12]: " OPT_SQL_ANIME_EPISODES
+		OPT_SQL_ANIME_EPISODES=${OPT_SQL_ANIME_EPISODES:-12}
+		read -p "> Anime type? [0]: " OPT_SQL_ANIME_TYPE
+		OPT_SQL_ANIME_TYPE=${OPT_SQL_ANIME_TYPE:-0}
+		read -p "> Anime status? [1]: " OPT_SQL_ANIME_STATUS
+		OPT_SQL_ANIME_STATUS=${OPT_SQL_ANIME_STATUS:-1}
+		read -p "> Anime genres? [0]: " OPT_SQL_ANIME_GENRES
+		OPT_SQL_ANIME_GENRES=${OPT_SQL_ANIME_GENRES:-0}
+		read -p "> Anime tags? [1]: " OPT_SQL_ANIME_TAGS
+		OPT_SQL_ANIME_TAGS=${OPT_SQL_ANIME_TAGS:-0}
+		read -p "> Anime rating? [0]: " OPT_SQL_ANIME_RATING
+		OPT_SQL_ANIME_RATING=${OPT_SQL_ANIME_RATING:-0}
+		read -p "> Anime group? [NULL]: " OPT_SQL_ANIME_GROUP
+		OPT_SQL_ANIME_GROUP=${OPT_SQL_ANIME_GROUP:-NULL}
+		OPT_SQL_ANIME_GROUP=$([ "$OPT_SQL_ANIME_GROUP" == "NULL" ] && echo "NULL" || echo "'$OPT_SQL_ANIME_GROUP'")
+		read -p "> Anime season? [NULL]: " OPT_SQL_ANIME_SEASON
+		OPT_SQL_ANIME_SEASON=${OPT_SQL_ANIME_SEASON:-NULL}
+		OPT_SQL_ANIME_SEASON=$([ "$OPT_SQL_ANIME_SEASON" == "NULL" ] && echo "NULL" || echo "'$OPT_SQL_ANIME_SEASON'")
+		read -p "> Anime presets? [4]: " OPT_SQL_ANIME_PRESETS
+		OPT_SQL_ANIME_PRESETS=${OPT_SQL_ANIME_PRESETS:-4}
+		read -p "> Anime location? [0]: " OPT_SQL_ANIME_LOCATION
+		OPT_SQL_ANIME_LOCATION=${OPT_SQL_ANIME_LOCATION:-0}
+		read -p "> Anime timestamp? [0]: " OPT_SQL_ANIME_TIMESTAMP
+		OPT_SQL_ANIME_TIMESTAMP=${OPT_SQL_ANIME_TIMESTAMP:-0}
+		echo -e "INSERT INTO animes (id, title, synopsis, episodes, type, status, genres, tags, rating, \`group\`, season, presets, location, timestamp) \
+VALUES ('$OPT_ID', '$OPT_SQL_ANIME_TITLE', '$OPT_SQL_ANIME_SYNOPSIS', $OPT_SQL_ANIME_EPISODES, $OPT_SQL_ANIME_TYPE, $OPT_SQL_ANIME_STATUS, $OPT_SQL_ANIME_GENRES, $OPT_SQL_ANIME_TAGS \
+, $OPT_SQL_ANIME_RATING, $OPT_SQL_ANIME_GROUP, $OPT_SQL_ANIME_SEASON, $OPT_SQL_ANIME_PRESETS, $OPT_SQL_ANIME_LOCATION, $OPT_SQL_ANIME_TIMESTAMP);\n"
+		read -p "Press enter..." </dev/tty
+	fi
+
+	read -p "> Generate SQL query for episodes? (y/n) [y]: " OPT_SQL_EPISODES
+	OPT_SQL_EPISODES=${OPT_SQL_EPISODES:-y}
+	if [ $OPT_SQL_EPISODES == "y" ]; then
+		OPT_SQL_EPISODES_RESULT=""
+		read -p "> Episode count? [12]: " OPT_SQL_EPISODES
+		OPT_SQL_EPISODES=${OPT_SQL_EPISODES:-12}
+		for (( I = 0; I < $OPT_SQL_EPISODES; I++ ))
+		do
+			read -p "> Episode $(($I+1)) title?: " OPT_SQL_EPISODE_TITLE
+			OPT_SQL_EPISODES_RESULT+="INSERT INTO episodes (id, pos, anime, title) VALUES ($OPT_ID-$I, $I, $OPT_ID, '$OPT_SQL_EPISODE_TITLE');\n"
+		done
+		echo -e $OPT_SQL_EPISODES_RESULT
+		read -p "Press enter..." </dev/tty
 	fi
 }
 

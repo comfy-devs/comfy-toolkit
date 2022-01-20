@@ -9,8 +9,11 @@ RESET="\033[0m"
 
 mkdir -p /usr/src/nyananime/src-episodes
 mkdir -p /usr/src/nyananime/dest-episodes
-S_FILES=$(find /usr/src/nyananime/src-episodes -name *.mkv | wc -l)
-D_FILES=$(find /usr/src/nyananime/dest-episodes -name *.mp4 | wc -l)
+
+refresh() {
+	S_FILES=$(find /usr/src/nyananime/src-episodes -name *.mkv | wc -l)
+	D_FILES=$(find /usr/src/nyananime/dest-episodes -name *.mp4 | wc -l)
+}
 
 step_select() {
 	clear
@@ -22,7 +25,7 @@ step_select() {
 		if [ $OPT_DELETE_SRC == "y" ]; then
 			echo "Deleting source files..."
 			rm -rf /usr/src/nyananime/src-episodes/*
-			S_FILES="0"
+			refresh
 		fi
 	fi
 
@@ -37,6 +40,7 @@ step_select() {
 				rm -rf /usr/src/nyananime/src-episodes; ln -sf $OPT_SEL_SRC /usr/src/nyananime/src-episodes
 			;;
 		esac
+		refresh
 	fi
 
 	if [ ! $D_FILES == "0" ]; then
@@ -45,6 +49,7 @@ step_select() {
 		if [ $OPT_DELETE_DEST == "y" ]; then
 			echo "Deleting destination files..."
 			rm -rf /usr/src/nyananime/dest-episodes/*
+			refresh
 		fi
 	fi
 }
@@ -197,6 +202,7 @@ step_upload() {
 	fi
 }
 
+refresh
 while [ 1 ]
 do
 	clear

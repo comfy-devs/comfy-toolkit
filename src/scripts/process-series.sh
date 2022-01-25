@@ -198,7 +198,7 @@ VALUES ('$OPT_ID', '$OPT_SQL_ANIME_TITLE', '$OPT_SQL_ANIME_SYNOPSIS', $OPT_SQL_A
 		for (( I = 0; I < $OPT_SQL_EPISODES; I++ ))
 		do
 			read -p "> Episode $(($I+1)) title?: " OPT_SQL_EPISODE_TITLE
-			OPT_SQL_EPISODES_RESULT+="INSERT INTO episodes (id, pos, anime, title) VALUES ($OPT_ID-$I, $I, $OPT_ID, '$OPT_SQL_EPISODE_TITLE');\n"
+			OPT_SQL_EPISODES_RESULT+="INSERT INTO episodes (id, pos, anime, title) VALUES ('$OPT_ID-$I', $I, $OPT_ID, '$OPT_SQL_EPISODE_TITLE');\n"
 		done
 		echo -e $OPT_SQL_EPISODES_RESULT
 		read -p "Press enter..." </dev/tty

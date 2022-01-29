@@ -3,8 +3,8 @@ services:
     container_name: nyananime-toolkit
     image: nyananime-toolkit:latest
     volumes:
-      - /mnt/uwu/Torrents:/usr/src/torrents
-      - /usr/src/nyananime:/usr/src/nyananime
+      - /mnt/data/torrents:/usr/src/torrents
+      - /mnt/data/nyananime:/usr/src/nyananime
     build:
       context: ./
       dockerfile: .docker/images/nyananime-toolkit/Dockerfile

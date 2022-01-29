@@ -1,2 +1,4 @@
 .docker
 !.docker/extra
+src/clean-vtt/node_modules
+src/clean-vtt/build

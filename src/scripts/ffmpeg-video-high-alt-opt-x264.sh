@@ -1,4 +1,4 @@
-# /bin/bash
+#!/bin/bash
 # Video (x264 - 1080p) + Audio (AAC)
 # Modified options (rc-lookahead, b-adapt, trellis, me, subme)
 

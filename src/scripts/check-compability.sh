@@ -1,4 +1,4 @@
-# /bin/bash
+#!/bin/bash
 # Checks compability/data about an episode folder
 
 V_FILE=$(find "$1" -type f -exec file -N -i -- {} + | sed -n 's!: video/[^:]*$!!p')

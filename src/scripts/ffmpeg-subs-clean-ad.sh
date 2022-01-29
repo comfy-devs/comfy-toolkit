@@ -1,4 +1,4 @@
-# /bin/bash
+#!/bin/bash
 # Additional cleaning of VTT subtitles
 
 cd ../clean-vtt

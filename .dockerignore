@@ -1,4 +1,5 @@
 .docker
 !.docker/extra
+src/dashboard/**/__pycache__
 src/clean-vtt/node_modules
 src/clean-vtt/build

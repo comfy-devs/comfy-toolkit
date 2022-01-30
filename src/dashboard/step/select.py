@@ -21,10 +21,10 @@ def stepSelect():
         opt_sel_method = "local" if opt_sel_method == "" else opt_sel_method
         if opt_sel_method == "local":
             opt_sel_src = subprocess.getoutput("mktemp")
-            system(f'ranger --choosedir="{src}" 1>&2')
-            opt_sel_src = subprocess.getoutput(f"cat {src}")
+            system(f'ranger --choosedir="{opt_sel_src}" 1>&2')
+            opt_sel_src = subprocess.getoutput(f"cat {opt_sel_src}")
             system(f"rm -rf /usr/src/nyananime/src-episodes/{opt_id}")
-            system(f'ln -sf "{src}" /usr/src/nyananime/src-episodes/{opt_id}')
+            system(f'ln -sf "{opt_sel_src}" /usr/src/nyananime/src-episodes/{opt_id}')
             files = getFiles(opt_id)
 
     if files.get("dest_files") != "0":

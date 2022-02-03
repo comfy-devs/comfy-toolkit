@@ -34,8 +34,11 @@ def stepTranscode(dashboard):
             for entry in entries:
                 v_file = subprocess.getoutput(f'find "/usr/src/nyananime/dest-episodes/{opt_id}/{entry}" -name *.mp4')
                 v_bitrate = subprocess.getoutput(f'ffprobe -i "{v_file}" -v quiet -select_streams v:0 -show_entries stream=bit_rate -hide_banner -of default=noprint_wrappers=1:nokey=1')
-                v_bitrate = round(float(v_bitrate) / 1000000, 2)
-                print(f'Bitrate for episode {getColor("gray")}\'{entry}\'{getColor("reset")}: {v_bitrate} Mb/s')
+                try:
+                    v_bitrate = round(float(v_bitrate) / 1000000, 2)
+                    print(f'Bitrate for episode {getColor("gray")}\'{entry}\'{getColor("reset")}: {v_bitrate} Mb/s')
+                except e:
+                    print(f'Bitrate for episode {getColor("gray")}\'{entry}\'{getColor("reset")}: ?? Mb/s')
 
         opt_min_bitrate = input("> Minimal bitrate? (recommended: 550k) [550k]: ")
         opt_min_bitrate = "550k" if opt_min_bitrate == "" else opt_min_bitrate

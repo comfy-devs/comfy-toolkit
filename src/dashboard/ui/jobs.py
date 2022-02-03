@@ -1,5 +1,5 @@
 from os import system
-from util import getColor
+from util import colorize
 
 def printJob(job, color="reset"):
     jobType = "{:<10}".format(job.jobType[:10])
@@ -7,7 +7,7 @@ def printJob(job, color="reset"):
     jobStatus = "{:<10}".format(job.jobStatus[:10])
     jobProgress = str(job.jobProgress) + "%"
     jobProgress = "{:<10}".format(jobProgress[:10])
-    print(f'{getColor(color)}{jobType} | {jobName} | {jobStatus} | {jobProgress}{getColor("reset")}')
+    print(f'{colorize(color, f"{jobType} | {jobName} | {jobStatus} | {jobProgress}")}')
 
 def printJobsUI(dashboard):
     n = len(dashboard.jobs)
@@ -17,8 +17,8 @@ def printJobsUI(dashboard):
         n += len(dashboard.completedJobs)
 
     system("clear")
-    print(f'{getColor("gray")}Nyan Anime Toolkit - Jobs ({n}){getColor("reset")}')
-    print(f'{getColor("gray")}{"{:<10}".format("Type")} | {"{:<64}".format("Name")} | {"{:<10}".format("Status")} | {"{:<10}".format("Progress")}{getColor("reset")}')
+    print(colorize("gray", f'Nyan Anime Toolkit - Jobs ({n})'))
+    print(colorize("gray", f'{"{:<10}".format("Type")} | {"{:<64}".format("Name")} | {"{:<10}".format("Status")} | {"{:<10}".format("Progress")}'))
     
     if dashboard.currentJob != None:
         printJob(dashboard.currentJob, "bright_blue")

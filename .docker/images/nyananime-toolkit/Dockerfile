@@ -32,7 +32,7 @@ RUN cd ffmpeg-git && makepkg --noconfirm -si
 
 # Build src
 USER root
-RUN pacman --noconfirm -S python nodejs yarn bc libwebp
+RUN pacman --noconfirm -S python python-pip nodejs yarn bc libwebp
 WORKDIR /usr/src/app
 
 COPY . .

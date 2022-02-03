@@ -1,11 +1,11 @@
 import subprocess
 from os import system
-from util import getColor
+from util import colorize
 from job.job import Job
 
 def stepTranscode(dashboard):
     system("clear")
-    print(f'{getColor("gray")}Nyan Anime Toolkit - Transcode{getColor("reset")}')
+    print(f'{colorize("gray", f"Nyan Anime Toolkit - Transcode")}')
     opt_id = input("> Anime ID? (ID from anilist.co): ")
     opt_quality = input("> Encoding quality? (low/med/high/vp9) [high]: ")
     opt_quality = "high" if opt_quality == "" else opt_quality
@@ -36,9 +36,9 @@ def stepTranscode(dashboard):
                 v_bitrate = subprocess.getoutput(f'ffprobe -i "{v_file}" -v quiet -select_streams v:0 -show_entries stream=bit_rate -hide_banner -of default=noprint_wrappers=1:nokey=1')
                 try:
                     v_bitrate = round(float(v_bitrate) / 1000000, 2)
-                    print(f'Bitrate for episode {getColor("gray")}\'{entry}\'{getColor("reset")}: {v_bitrate} Mb/s')
+                    print(f'Bitrate for episode \'{colorize("gray", entry)}\': {v_bitrate} Mb/s')
                 except e:
-                    print(f'Bitrate for episode {getColor("gray")}\'{entry}\'{getColor("reset")}: ?? Mb/s')
+                    print(f'Bitrate for episode \'{colorize("gray", entry)}\': ?? Mb/s')
 
         opt_min_bitrate = input("> Minimal bitrate? (recommended: 550k) [550k]: ")
         opt_min_bitrate = "550k" if opt_min_bitrate == "" else opt_min_bitrate

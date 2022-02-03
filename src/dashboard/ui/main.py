@@ -1,5 +1,5 @@
 from os import system
-from util import getColor
+from util import colorize
 from step.select import stepSelect
 from step.transcode import stepTranscode
 from step.extra import stepExtra
@@ -19,7 +19,7 @@ def printJobsUISelector(dashboard):
 
 def printMainUI(dashboard):
     system("clear")
-    print(f'{getColor("gray")}Nyan Anime Toolkit - Menu{getColor("reset")}')
+    print(f'{colorize("gray", f"Nyan Anime Toolkit - Menu")}')
     print("1) List jobs")
     print("2) Add a job")
     print("3) Other")
@@ -31,7 +31,7 @@ def printMainUI(dashboard):
         printJobsUISelector(dashboard)
     elif selection == "2":
         system("clear")
-        print(f'{getColor("gray")}Nyan Anime Toolkit - Add a job{getColor("reset")}')
+        print(f'{colorize("gray", f"Nyan Anime Toolkit - Add a job")}')
         print("1) Transcode (used to transcode anime)")
         print("2) Back")
         selection = input("> Selection? [1]: ")
@@ -42,7 +42,7 @@ def printMainUI(dashboard):
             stepTranscode(dashboard)
     elif selection == "3":
         system("clear")
-        print(f'{getColor("gray")}Nyan Anime Toolkit - Other{getColor("reset")}')
+        print(f'{colorize("gray", f"Nyan Anime Toolkit - Other")}')
         print("1) Extra (used for extra post-processing)")
         print("2) Upload (used for uploading onto the server)")
         print("3) Back")
@@ -50,7 +50,7 @@ def printMainUI(dashboard):
         selection = "1" if selection == "" else selection
 
         if selection == "1":
-            step_extra()
+            stepExtra()
         elif selection == "2":
             step_upload()
     elif selection == "4":

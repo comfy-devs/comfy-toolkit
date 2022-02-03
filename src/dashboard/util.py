@@ -18,14 +18,14 @@ class setInterval :
     def cancel(self) :
         self.stopEvent.set()
 
-def getColor(color):
+def colorize(color, text):
     colors = {
         "gray": "\033[0;37m",
         "bright_blue": "\033[0;94m",
         "bright_green": "\033[0;92m",
         "reset": "\033[0m"
     }
-    return colors.get(color)
+    return f"{colors[color]}{text}{colors['reset']}"
 
 
 def getFiles(id):

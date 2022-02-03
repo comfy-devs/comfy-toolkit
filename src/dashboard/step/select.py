@@ -1,14 +1,14 @@
 import subprocess
 from os import system
-from util import getColor, getFiles
+from util import colorize, getFiles
 
 def stepSelect():
     system("clear")
-    print(f'{getColor("gray")}Nyan Anime Toolkit - Select{getColor("reset")}')
+    print(f'{colorize("gray", f"Nyan Anime Toolkit - Select")}')
     opt_id = input("> Anime ID? (ID from anilist.co): ")
     files = getFiles(opt_id)
     
-    if files.get("src_files") != "0":
+    if files["src_files"] != "0":
         opt_delete_src = input("> Existing source files found! Delete them? (y/n) [n]: ")
         opt_delete_src = "n" if opt_delete_src == "" else opt_delete_src
         if opt_delete_src == "y":
@@ -16,7 +16,7 @@ def stepSelect():
             system(f"rm -rf /usr/src/nyananime/src-episodes/{opt_id}/*")
             files = getFiles(opt_id)
     
-    if files.get("src_files") == "0":
+    if files["src_files"] == "0":
         opt_sel_method = input("> Anime selection method? (local) [local]: ")
         opt_sel_method = "local" if opt_sel_method == "" else opt_sel_method
         if opt_sel_method == "local":
@@ -27,7 +27,7 @@ def stepSelect():
             system(f'ln -sf "{opt_sel_src}" /usr/src/nyananime/src-episodes/{opt_id}')
             files = getFiles(opt_id)
 
-    if files.get("dest_files") != "0":
+    if files["dest_files"] != "0":
         opt_delete_dest = input("> Existing destination files found! Delete them? (y/n) [n]: ")
         opt_delete_dest = "n" if opt_delete_dest == "" else opt_delete_dest
         if opt_delete_dest == "y":

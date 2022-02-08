@@ -53,7 +53,7 @@ def stepExtra():
             description (asHtml: false)
             episodes
             genres
-            coverImage { medium }
+            coverImage { extraLarge }
             relations {
                 edges {
                     node { id }
@@ -69,8 +69,8 @@ def stepExtra():
     opt_poster = input("> Download poster? (y/n) [y]: ")
     opt_poster = "y" if opt_poster == "" else opt_poster
     if opt_poster == "y":
-        opt_poster_url = input(f"> Poster URL? [{colorize('gray', media['coverImage']['medium'])}]: ")
-        opt_poster_url = media["coverImage"]["medium"] if opt_poster_url == "" else opt_poster_url
+        opt_poster_url = input(f"> Poster URL? [{colorize('gray', media['coverImage']['extraLarge'])}]: ")
+        opt_poster_url = media["coverImage"]["extraLarge"] if opt_poster_url == "" else opt_poster_url
         system(f"wget -O /usr/src/nyananime/dest-episodes/poster_in {opt_poster_url}")
         system(f"cwebp -q 90 /usr/src/nyananime/dest-episodes/poster_in -o /usr/src/nyananime/dest-episodes/poster.webp")
         system(f"rm /usr/src/nyananime/dest-episodes/poster_in")

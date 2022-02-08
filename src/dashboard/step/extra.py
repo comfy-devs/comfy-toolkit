@@ -82,9 +82,11 @@ def stepExtra():
         mediaTitle = media["title"]["romaji"][:32] if len(media["title"]["romaji"]) > 32 else media["title"]["romaji"]
         opt_sql_anime_title = input(f"> Anime title? [{colorize('gray', mediaTitle)}]: ")
         opt_sql_anime_title = media["title"]["romaji"] if opt_sql_anime_title == "" else opt_sql_anime_title
-        mediaSynopsis = media["description"][:32] if len(media["description"]) > 32 else media["description"]
-        opt_sql_anime_synopsis = input(f"> Anime synopsis?: [{colorize('gray', mediaSynopsis + '...')}]: ")
-        opt_sql_anime_synopsis = media["description"] if opt_sql_anime_synopsis == "" else opt_sql_anime_synopsis
+        opt_sql_anime_title = opt_sql_anime_title.replace('\'', '\\\'')
+        # mediaSynopsis = media["description"][:32] if len(media["description"]) > 32 else media["description"]
+        # opt_sql_anime_synopsis = input(f"> Anime synopsis? [{colorize('gray', mediaSynopsis + '...')}]: ")
+        # opt_sql_anime_synopsis = media["description"] if opt_sql_anime_synopsis == "" else opt_sql_anime_synopsis
+        opt_sql_anime_synopsis = input(f"> Anime synopsis?: ")
         opt_sql_anime_episodes = input(f"> Anime episode count? [{colorize('gray', media['episodes'])}]: ")
         opt_sql_anime_episodes = media["episodes"] if opt_sql_anime_episodes == "" else opt_sql_anime_episodes
         opt_sql_anime_type = input(f"> Anime type? [{colorize('gray', formatMap[media['format']])}]: ")
@@ -111,4 +113,19 @@ def stepExtra():
         print(f'''INSERT INTO animes (id, title, synopsis, episodes, type, status, genres, tags, rating, `group`, season, presets, location, timestamp)
 VALUES ('{opt_id}', '{opt_sql_anime_title}', '{""}', {opt_sql_anime_episodes}, {opt_sql_anime_type}, {opt_sql_anime_status}, {opt_sql_anime_genres}, {opt_sql_anime_tags}
 , {opt_sql_anime_rating}, {opt_sql_anime_group}, {opt_sql_anime_season}, {opt_sql_anime_presets}, {opt_sql_anime_location}, {opt_sql_anime_timestamp});''')
+        input("Press enter...")
+
+    opt_sql_episodes = input("> Generate SQL query for episodes? (y/n) [y]: ")
+    opt_sql_episodes = "y" if opt_sql_episodes == "" else opt_sql_episodes
+    if opt_sql_episodes == "y":
+        opt_sql_episodes_result = ""
+        opt_sql_anime_episodes = input(f"> Anime episode count? [{colorize('gray', media['episodes'])}]: ")
+        opt_sql_anime_episodes = media["episodes"] if opt_sql_anime_episodes == "" else opt_sql_anime_episodes
+
+        for i in range(int(opt_sql_anime_episodes)):
+            opt_sql_episode_title = input(f"> Episode '{colorize('gray', i)}' title?: ")
+            opt_sql_episode_title = opt_sql_episode_title.replace('\'', '\\\'')
+            opt_sql_episodes_result += f"INSERT INTO episodes (id, pos, anime, title) VALUES ('{opt_id}-{i}', {i}, {opt_id}, '{opt_sql_episode_title}');\n"
+
+        print(opt_sql_episodes_result)
         input("Press enter...")

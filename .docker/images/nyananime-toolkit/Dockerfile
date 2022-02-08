@@ -23,10 +23,8 @@ USER build
 WORKDIR /tmp
 
 RUN mkdir -p ffmpeg-git
-RUN cd ffmpeg-git && wget -O 010-ffmpeg-fix-vmaf-model-path.patch "https://aur.archlinux.org/cgit/aur.git/plain/010-ffmpeg-fix-vmaf-model-path.patch?h=ffmpeg-git"
+RUN cd ffmpeg-git && wget -O 010-ffmpeg-add-av_stream_get_first_dts-for-chromium.patch "https://aur.archlinux.org/cgit/aur.git/plain/010-ffmpeg-add-av_stream_get_first_dts-for-chromium.patch?h=ffmpeg-git"
 RUN cd ffmpeg-git && wget -O PKGBUILD "https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=ffmpeg-git"
-RUN cd ffmpeg-git && sed -i 's/patch -d ffmpeg -Np1 -i "${srcdir}\/010-ffmpeg-fix-vmaf-model-path.patch"/echo "Skipping obsolete model patch..."/' PKGBUILD
-RUN cd ffmpeg-git && sed -i 's/vmaf\n//' PKGBUILD
 RUN cd ffmpeg-git && sed -i 's/--enable-version3/--enable-version3 --enable-nonfree --enable-libfdk-aac/' PKGBUILD
 RUN cd ffmpeg-git && makepkg --noconfirm -si
 

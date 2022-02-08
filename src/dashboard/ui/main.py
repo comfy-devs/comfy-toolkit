@@ -52,6 +52,6 @@ def printMainUI(dashboard):
         if selection == "1":
             stepExtra()
         elif selection == "2":
-            step_upload()
+            stepUpload()
     elif selection == "4":
         exit(0)

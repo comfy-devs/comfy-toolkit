@@ -1,4 +1,5 @@
 #!/bin/bash
 # Subtitles (VTT)
+# Arguments: 1 (source .mp4 file), 2 (destination .vtt file), 3 (index)
 
-ffmpeg -i "$1" -loglevel error -stats -map 0:s:0 "$2/subs_en.vtt"
+ffmpeg -i "$1" -loglevel error -stats -map 0:s:$3 "$2"

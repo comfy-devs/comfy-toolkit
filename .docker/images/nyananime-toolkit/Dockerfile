@@ -30,15 +30,19 @@ RUN cd ffmpeg-git && makepkg --noconfirm -si
 
 # Build src
 USER root
-RUN pacman --noconfirm -S python python-pip nodejs yarn bc libwebp
+RUN pacman --noconfirm -S python python-pip nodejs yarn bc jq libwebp
 WORKDIR /usr/src/app
 
 COPY . .
-RUN cd src/clean-vtt && yarn && yarn run build
+RUN cd src/clean-vtt && yarn
+RUN cd src/clean-vtt && yarn run build && yarn remove $(cat package.json | jq -r '.devDependencies | keys | join(" ")')
+RUN cd src/create-torrent && yarn
+RUN cd src/create-torrent && yarn run build && yarn remove $(cat package.json | jq -r '.devDependencies | keys | join(" ")')
+RUN cd src/create-torrent && sed -i 's/flat()/flat(64)/' node_modules/create-torrent/get-files.js
 
 # Install extra packages
 RUN pacman --noconfirm -S neovim ranger
 
 # Stage: run
-WORKDIR /usr/src/app/src/scripts
+WORKDIR /usr/src/app/src/dashboard
 CMD [ "ffmpeg", "-version" ]

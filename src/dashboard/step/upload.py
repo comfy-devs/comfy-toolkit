@@ -47,4 +47,7 @@ def stepUpload():
         if path.exists(f"/usr/src/nyananime/dest-episodes/{opt_id}/poster.webp"):
             system(f'mv "/usr/src/nyananime/dest-episodes/{opt_id}/poster.webp" "/usr/src/nyananime/server-image/{opt_id}/poster.webp"')
 
+        if path.exists(f"/usr/src/nyananime/dest-episodes/{opt_id}/series.torrent"):
+            system(f'mv "/usr/src/nyananime/dest-episodes/{opt_id}/series.torrent" "/usr/src/nyananime/server-video/{opt_id}/series.torrent"')
+
         system(f'rmdir "/usr/src/nyananime/dest-episodes/{opt_id}"')

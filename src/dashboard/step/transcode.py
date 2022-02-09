@@ -7,27 +7,15 @@ def stepTranscode(dashboard):
     system("clear")
     print(f'{colorize("gray", f"Nyan Anime Toolkit - Transcode")}')
     opt_id = input("> Anime ID? (ID from anilist.co): ")
-    opt_quality = input("> Encoding quality? (low/med/high/vp9) [high]: ")
-    opt_quality = "high" if opt_quality == "" else opt_quality
+    opt_codec = input("> Encoding codec? (x264/vp9) [x264]: ")
+    opt_codec = "x264" if opt_codec == "" else opt_codec
 
     dest_script = ""
     dest_file = ""
     opt_min_bitrate = ""
     opt_bitrate = ""
     opt_max_bitrate = ""
-    if opt_quality == "low":
-        dest_script = "ffmpeg-video-low-x264.sh"
-        dest_file = "ep_low.mp4"
-    elif opt_quality == "med":
-        dest_script = "ffmpeg-video-med-x264.sh"
-        dest_file = "ep_med.mp4"
-    elif opt_quality == "high":
-        dest_script = "ffmpeg-video-high-x264.sh"
-        dest_file = "ep_high.mp4"
-    elif opt_quality == "vp9":		
-        dest_script = "ffmpeg-video-vp9.sh"
-        dest_file = "ep_vp9.webm"
-
+    if opt_codec == "vp9":
         entries = subprocess.getoutput(f"LC_COLLATE=C ls /usr/src/nyananime/dest-episodes/{opt_id}").split("\n")
         if len(entries) > 0:
             print("Listing bitrates of previous transcodes...")
@@ -51,6 +39,6 @@ def stepTranscode(dashboard):
     entries = subprocess.getoutput(f"LC_COLLATE=C ls /usr/src/nyananime/src-episodes/{opt_id}").split("\n")
     for entry in entries:
         job = Job("transcoding", entry)
-        job.setupTranscoding(opt_id, i, entry, dest_file, dest_script, [opt_min_bitrate, opt_bitrate, opt_max_bitrate])
+        job.setupTranscoding(opt_id, i, entry, opt_codec, [opt_min_bitrate, opt_bitrate, opt_max_bitrate])
         dashboard.jobs.append(job)
         i += 1

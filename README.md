@@ -13,19 +13,19 @@ Shutting down is with <code>docker-compose down</code>.
 > 1) Edit volumes in <code>docker-compose.yml</code>, to mount whatever folders you want  
 
 ## Scripts included
-| Script                                                                    | Description                                             |
-| ------------------------------------------------------------------------- | ------------------------------------------------------- |
-| `process-series`                                                          | Used for processing anime series, in a GUI like form.   |
-| `check-compability`                                                       | idk why that exists actually lol.                       |
-| `ffmpeg-video-xx-x264 <source_file> <number>`                             | Processes a single episode with libx264.                |
-| `ffmpeg-video-vp9 <source_file> <number> <min_rate> <rate> <max_rate>`    | Processes a single episode with libvpx-vp9.             |
-| `ffmpeg-thumbnail <source_file> <number>`                                 | Extracts a thumbnail from a single episode.             |
-| `ffmpeg-subs <source_file> <number>`                                      | Extracts subtitles from a single episode.               |
-| `ffmpeg-subs-clean <file>`                                                | Cleans subtitles with a simple regex.                   |
-| `ffmpeg-subs-clean-ad <file>`                                             | Cleans subtitles with custom strategies.                |
-| `ffmpeg-chapters <source_file> <number>`                                  | Extracts chapters from a single episode.                |
-| `ffmpeg-stats <source_file> <number>`                                     | Extracts stats from a single episode.                   |
-| `tags.py <tag> <tag> ...`                                                 | Returns a bitflag for selected tags.                    |
+| Script                        | Description                                               |
+| ----------------------------- | --------------------------------------------------------- |
+| `python dashboard.py`         | Used for processing anime series, in a GUI like form.     |
+| `ffmpeg-video-x264-xx`        | Processes an episode with libx264.                        |
+| `ffmpeg-video-x264-hls`       | Generates HLS streams from an episode.                    |
+| `ffmpeg-video-vp9`            | Processes an episode with libvpx-vp9.                     |
+| `ffmpeg-thumbnail`            | Extracts a thumbnail from an episode.                     |
+| `ffmpeg-subs`                 | Extracts subtitles from an episode.                       |
+| `ffmpeg-chapters`             | Extracts chapters from an episode.                        |
+| `ffmpeg-stats`                | Extracts stats from an episode.                           |
+| `subs-clean`                  | Cleans subtitles with a simple regex.                     |
+| `subs-clean-ad`               | Cleans subtitles with custom strategies.                  |
+| `torrent-create`              | Creates a torrent for a series.                           |
 
 ## Contributing
 If you want a feature added or you found a bug, make a new <a href="https://github.com/nyananime-devs/nyananime-toolkit/issues">Issue</a>.  

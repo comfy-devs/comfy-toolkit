@@ -1,5 +1,6 @@
+import subprocess
 import json, requests, functools 
-from os import system
+from os import system, path
 from util import colorize
 
 formatMap = {
@@ -129,3 +130,13 @@ VALUES ('{opt_id}', '{opt_sql_anime_title}', '{""}', {opt_sql_anime_episodes}, {
 
         print(opt_sql_episodes_result)
         input("Press enter...")
+
+    opt_torrent = input("> Generate torrent for anime? (y/n) [y]: ")
+    opt_torrent = "y" if opt_torrent == "" else opt_torrent
+    if opt_torrent == "y":
+        if not path.exists(f"/usr/src/nyananime/dest-episodes/{opt_id}/series.torrent"):
+            print(f'Creating torrent...')
+            torrentSubprocess = subprocess.Popen(["../scripts/torrent-create.sh", f"/usr/src/nyananime/dest-episodes/{opt_id}", f"/usr/src/nyananime/dest-episodes/{opt_id}/series.torrent", opt_id, "Auto-generated torrent for Nyan Anime."], stdin=DEVNULL, stdout=DEVNULL, stderr=DEVNULL)
+            torrentSubprocess.wait()
+        else:
+            print(f'Torrent already created. Skipping...')

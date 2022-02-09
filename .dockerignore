@@ -3,3 +3,5 @@
 src/dashboard/**/__pycache__
 src/clean-vtt/node_modules
 src/clean-vtt/build
+src/create-torrent/node_modules
+src/create-torrent/build

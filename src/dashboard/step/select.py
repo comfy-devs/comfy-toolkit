@@ -1,6 +1,6 @@
 import subprocess
 from os import system
-from util import colorize, getFiles
+from util.general import colorize, getFiles
 
 def stepSelect():
     system("clear")

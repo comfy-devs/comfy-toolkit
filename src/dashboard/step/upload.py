@@ -1,6 +1,6 @@
 import subprocess
 from os import system, path
-from util import colorize
+from util.general import colorize
 
 def stepUpload():
     system("clear")

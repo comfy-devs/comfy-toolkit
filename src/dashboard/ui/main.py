@@ -1,5 +1,5 @@
 from os import system
-from util import colorize
+from util.general import colorize
 from step.select import stepSelect
 from step.transcode import stepTranscode
 from step.extra import stepExtra

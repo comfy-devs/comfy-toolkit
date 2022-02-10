@@ -1,6 +1,6 @@
 import subprocess
 from os import system
-from util import colorize
+from util.general import colorize
 from job.job import Job
 
 def stepTranscode(dashboard):

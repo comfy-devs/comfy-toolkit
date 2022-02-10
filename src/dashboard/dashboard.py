@@ -1,5 +1,5 @@
 from os import system
-from util import setInterval, colorize
+from util.general import setInterval, colorize
 from ui.main import printMainUI
 from ui.jobs import printJobsUI
 

@@ -1,6 +1,6 @@
 import threading, subprocess, os
 from os import system, path
-from util import colorize
+from util.general import colorize
 
 # ffprobe -v error -select_streams s -show_entries stream=index -of csv=p=0 "[Erai-raws] Yuru Camp - 01 ~ 12 [1080p][Multiple Subtitle]/[Erai-raws] Yuru Camp - 01 [1080p][Multiple Subtitle].mkv" | wc -w
 # ffprobe -v error -select_streams s:1 -show_entries stream=index:stream_tags=language -of csv=p=0 "[Erai-raws] Yuru Camp - 01 ~ 12 [1080p][Multiple Subtitle]/[Erai-raws] Yuru Camp - 01 [1080p][Multiple Subtitle].mkv"

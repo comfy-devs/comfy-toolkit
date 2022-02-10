@@ -1,5 +1,5 @@
 from os import system
-from util import colorize
+from util.general import colorize
 
 def printJob(job, color="reset"):
     jobType = "{:<10}".format(job.jobType[:10])

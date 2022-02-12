@@ -17,20 +17,17 @@ def stepUpload():
             system(f'mkdir -p "/usr/src/nyananime/server-video/{opt_id}/{i}"')
             system(f'mkdir -p "/usr/src/nyananime/server-image/{opt_id}/{i}"')
 
-            if path.exists(f"/usr/src/nyananime/dest-episodes/{opt_id}/{i}/ep_low.mp4"):
-                system(f'mv "/usr/src/nyananime/dest-episodes/{opt_id}/{i}/ep_low.mp4" "/usr/src/nyananime/server-video/{opt_id}/{i}/ep_low.mp4"')
+            if path.exists(f"/usr/src/nyananime/dest-episodes/{opt_id}/{i}/episode_x264.mp4"):
+                system(f'mv "/usr/src/nyananime/dest-episodes/{opt_id}/{i}/episode_x264.mp4" "/usr/src/nyananime/server-video/{opt_id}/{i}/episode_x264.mp4"')
 
-            if path.exists(f"/usr/src/nyananime/dest-episodes/{opt_id}/{i}/ep_med.mp4"):
-                system(f'mv "/usr/src/nyananime/dest-episodes/{opt_id}/{i}/ep_med.mp4" "/usr/src/nyananime/server-video/{opt_id}/{i}/ep_med.mp4"')
-
-            if path.exists(f"/usr/src/nyananime/dest-episodes/{opt_id}/{i}/ep_high.mp4"):
-                system(f'mv "/usr/src/nyananime/dest-episodes/{opt_id}/{i}/ep_high.mp4" "/usr/src/nyananime/server-video/{opt_id}/{i}/ep_high.mp4"')
-
-            if path.exists(f"/usr/src/nyananime/dest-episodes/{opt_id}/{i}/ep_vp9.webm"):
-                system(f'mv "/usr/src/nyananime/dest-episodes/{opt_id}/{i}/ep_vp9.webm" "/usr/src/nyananime/server-video/{opt_id}/{i}/ep_vp9.webm"')
+            if path.exists(f"/usr/src/nyananime/dest-episodes/{opt_id}/{i}/episode_vp9.webm"):
+                system(f'mv "/usr/src/nyananime/dest-episodes/{opt_id}/{i}/episode_vp9.webm" "/usr/src/nyananime/server-video/{opt_id}/{i}/episode_vp9.webm"')
            
-            if path.exists(f"/usr/src/nyananime/dest-episodes/{opt_id}/{i}/subs_en.vtt"):
-                system(f'mv "/usr/src/nyananime/dest-episodes/{opt_id}/{i}/subs_en.vtt" "/usr/src/nyananime/server-video/{opt_id}/{i}/subs_en.vtt"')
+            if path.exists(f"/usr/src/nyananime/dest-episodes/{opt_id}/{i}/subs"):
+                system(f'mv "/usr/src/nyananime/dest-episodes/{opt_id}/{i}/subs" "/usr/src/nyananime/server-video/{opt_id}/{i}/subs"')
+            
+            if path.exists(f"/usr/src/nyananime/dest-episodes/{opt_id}/{i}/hls"):
+                system(f'mv "/usr/src/nyananime/dest-episodes/{opt_id}/{i}/hls" "/usr/src/nyananime/server-video/{opt_id}/{i}/hls"')
 
             if path.exists(f"/usr/src/nyananime/dest-episodes/{opt_id}/{i}/thumbnail.webp"):
                 system(f'mv "/usr/src/nyananime/dest-episodes/{opt_id}/{i}/thumbnail.webp" "/usr/src/nyananime/server-image/{opt_id}/{i}/thumbnail.webp"')

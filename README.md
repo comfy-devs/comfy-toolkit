@@ -16,9 +16,9 @@ Shutting down is with <code>docker-compose down</code>.
 | Script                        | Description                                               |
 | ----------------------------- | --------------------------------------------------------- |
 | `python dashboard.py`         | Used for processing anime series, in a GUI like form.     |
-| `ffmpeg-video-x264-xx`        | Processes an episode with libx264.                        |
-| `ffmpeg-video-x264-hls`       | Generates HLS streams from an episode.                    |
-| `ffmpeg-video-vp9`            | Processes an episode with libvpx-vp9.                     |
+| `ffmpeg-x264-xx`        | Processes an episode with libx264.                        |
+| `ffmpeg-x264-hls`       | Generates HLS streams from an episode.                    |
+| `ffmpeg-vp9`            | Processes an episode with libvpx-vp9.                     |
 | `ffmpeg-thumbnail`            | Extracts a thumbnail from an episode.                     |
 | `ffmpeg-subs`                 | Extracts subtitles from an episode.                       |
 | `ffmpeg-chapters`             | Extracts chapters from an episode.                        |

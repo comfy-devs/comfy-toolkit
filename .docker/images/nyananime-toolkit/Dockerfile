@@ -34,6 +34,7 @@ RUN pacman --noconfirm -S python python-pip nodejs yarn bc jq libwebp
 WORKDIR /usr/src/app
 
 COPY . .
+RUN cd src/dashboard && pip install -r requirements.txt
 RUN cd src/clean-vtt && yarn
 RUN cd src/clean-vtt && yarn run build && yarn remove $(cat package.json | jq -r '.devDependencies | keys | join(" ")')
 RUN cd src/create-torrent && yarn

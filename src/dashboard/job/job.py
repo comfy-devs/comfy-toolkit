@@ -23,10 +23,11 @@ class Job(threading.Thread):
         self.jobStatus = "working"
         DEVNULL = open(os.devnull, 'wb')
 
+        system(f'mkdir -p "/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}"')
         if self.jobCodec == "x264":
             if not path.exists(f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/episode_x264.mp4") and not path.exists(f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/hls/x264/master.m3u8"):
                 self.jobLogs.append(f'Transcoding x264 video...')
-                args = [f"../scripts/ffmpeg-x264-medium.sh", f"/usr/src/nyananime/src-episodes/{self.jobAnimeID}/{self.jobSrcFile}", f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/subs", f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}"]
+                args = [f"../scripts/ffmpeg-x264-medium.sh", f"/usr/src/nyananime/src-episodes/{self.jobAnimeID}/{self.jobSrcFile}", f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}"]
                 self.jobSubprocess = subprocess.Popen(args, stdin=DEVNULL, stdout=DEVNULL, stderr=DEVNULL)
                 self.jobSubprocess.wait()
             else:
@@ -34,7 +35,7 @@ class Job(threading.Thread):
         elif self.jobCodec == "vp9":
             if not path.exists(f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/episode_vp9.webm") and not path.exists(f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/hls/vp9/master.m3u8"):
                 self.jobLogs.append(f'Transcoding VP9 video...')
-                args = [f"../scripts/ffmpeg-vp9.sh", f"/usr/src/nyananime/src-episodes/{self.jobAnimeID}/{self.jobSrcFile}", f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/subs", f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}"]
+                args = [f"../scripts/ffmpeg-vp9.sh", f"/usr/src/nyananime/src-episodes/{self.jobAnimeID}/{self.jobSrcFile}", f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}"]
                 args.extend(self.jobVideoOptions)
                 self.jobSubprocess = subprocess.Popen(args, stdin=DEVNULL, stdout=DEVNULL, stderr=DEVNULL)
                 self.jobSubprocess.wait()
@@ -85,7 +86,7 @@ class Job(threading.Thread):
             
             if not path.exists(f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/hls/subs/{subtitleStreamLanguage}.m3u8"):
                 self.jobLogs.append(f'Creating \'{colorize("gray", subtitleStreamLanguage)}\' HLS subtitle playlist...')
-                self.jobSubprocess = subprocess.Popen(["../scripts/subs-create-hls.sh", f"../../subs/{subtitleStreamLanguage}", duration, f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/hls/subs/{subtitleStreamLanguage}.m3u8"], stdin=DEVNULL, stdout=DEVNULL, stderr=DEVNULL)
+                self.jobSubprocess = subprocess.Popen(["../scripts/subs-create-hls.sh", f"../../subs/{subtitleStreamLanguage}.vtt", duration, f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/hls/subs/{subtitleStreamLanguage}.m3u8"], stdin=DEVNULL, stdout=DEVNULL, stderr=DEVNULL)
                 self.jobSubprocess.wait()
             else:
                 self.jobLogs.append(f'\'{colorize("gray", subtitleStreamLanguage)}\' HLS subtitle playlist already created. Skipping...')
@@ -105,7 +106,7 @@ class Job(threading.Thread):
                 if subtitleMedia not in masterLines:
                     if i == 0:
                         masterLines.append("")
-                    masterLines.append(subtitleMedia)
+                    masterLines.append(subtitleMedia + "\n")
 
         with open(f'/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/hls/{"x264" if self.jobCodec == "x264" else "vp9"}/master.m3u8', "w") as f:
             f.writelines(masterLines)

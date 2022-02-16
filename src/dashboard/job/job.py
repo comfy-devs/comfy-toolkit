@@ -70,9 +70,16 @@ class Job(threading.Thread):
         system(f'mkdir -p "/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/hls/subs"')
         subtitleStreams = subprocess.getoutput(f'ffprobe -v error -select_streams s -show_entries stream=index -of csv=p=0 "/usr/src/nyananime/src-episodes/{self.jobAnimeID}/{self.jobSrcFile}" | wc -w')
         duration = subprocess.getoutput(f'ffprobe -i "/usr/src/nyananime/src-episodes/{self.jobAnimeID}/{self.jobSrcFile}" -v quiet -show_entries format=duration -hide_banner -of default=noprint_wrappers=1:nokey=1')
+        processedSubtitles = []
         for i in range(int(subtitleStreams)):
             subtitleStreamLanguage = subprocess.getoutput(f'ffprobe -v error -select_streams s:{i} -show_entries stream=index:stream_tags=language -of csv=p=0 "/usr/src/nyananime/src-episodes/{self.jobAnimeID}/{self.jobSrcFile}"')
+            if "," not in subtitleStreamLanguage:
+                continue
             subtitleStreamLanguage = subtitleStreamLanguage[(subtitleStreamLanguage.index(",") + 1):]
+            if subtitleStreamLanguage in processedSubtitles:
+                continue
+            processedSubtitles.append(subtitleStreamLanguage)
+
             if not path.exists(f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/subs/{subtitleStreamLanguage}.vtt"):
                 self.jobLogs.append(f'Extracting \'{colorize("gray", subtitleStreamLanguage)}\' subtitles...')
                 self.jobSubprocess = subprocess.Popen(["../scripts/ffmpeg-subs.sh", f"/usr/src/nyananime/src-episodes/{self.jobAnimeID}/{self.jobSrcFile}", f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/subs/{subtitleStreamLanguage}.vtt", f"{i}"], stdin=DEVNULL, stdout=DEVNULL, stderr=DEVNULL)
@@ -99,9 +106,16 @@ class Job(threading.Thread):
                 if "#EXT-X-STREAM-INF" in masterLines[i] and ',SUBTITLES="subs"' not in masterLines[i]:
                     masterLines[i] = masterLines[i][:-1] + ',SUBTITLES="subs"\n'
 
+            processedSubtitles = []
             for i in range(int(subtitleStreams)):
                 subtitleStreamLanguage = subprocess.getoutput(f'ffprobe -v error -select_streams s:{i} -show_entries stream=index:stream_tags=language -of csv=p=0 "/usr/src/nyananime/src-episodes/{self.jobAnimeID}/{self.jobSrcFile}"')
+                if "," not in subtitleStreamLanguage:
+                    continue
                 subtitleStreamLanguage = subtitleStreamLanguage[(subtitleStreamLanguage.index(",") + 1):]
+                if subtitleStreamLanguage in processedSubtitles:
+                    continue
+                processedSubtitles.append(subtitleStreamLanguage)
+
                 subtitleMedia = f'#EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-ID="subs",NAME="{subtitleStreamLanguage}",DEFAULT={"YES" if subtitleStreamLanguage == "eng" else "NO"},FORCED=NO,URI="../subs/{subtitleStreamLanguage}.m3u8",LANGUAGE="{subtitleStreamLanguage}"'
                 if subtitleMedia not in masterLines:
                     if i == 0:

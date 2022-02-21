@@ -1,4 +1,4 @@
-import subprocess
+import subprocess, os
 from os import system, path
 from util.general import colorize
 from util.api import fetchAnilist, fetchMAL
@@ -11,7 +11,7 @@ def stepExtra():
 
     media = fetchAnilist(opt_id)
     media_mal = None
-    if opt_mal_id == "":
+    if opt_mal_id != "":
         media_mal = fetchMAL(opt_mal_id, media["episodes"])
 
     opt_poster = input("> Download poster? (y/n) [y]: ")
@@ -19,9 +19,9 @@ def stepExtra():
     if opt_poster == "y":
         opt_poster_url = input(f"> Poster URL? [{colorize('gray', media['coverImage']['extraLarge'])}]: ")
         opt_poster_url = media["coverImage"]["extraLarge"] if opt_poster_url == "" else opt_poster_url
-        system(f"wget -O /usr/src/nyananime/dest-episodes/poster_in {opt_poster_url}")
-        system(f"cwebp -q 90 /usr/src/nyananime/dest-episodes/poster_in -o /usr/src/nyananime/dest-episodes/poster.webp")
-        system(f"rm /usr/src/nyananime/dest-episodes/poster_in")
+        system(f"wget -O /usr/src/nyananime/dest-episodes/{opt_id}/poster_in {opt_poster_url}")
+        system(f"cwebp -q 90 /usr/src/nyananime/dest-episodes/{opt_id}/poster_in -o /usr/src/nyananime/dest-episodes/{opt_id}/poster.webp")
+        system(f"rm /usr/src/nyananime/dest-episodes/{opt_id}/poster_in")
 
     # TODO: Finish auto-completing for group, season
     opt_sql_anime = input("> Generate SQL query for anime? (y/n) [y]: ")
@@ -61,7 +61,7 @@ def stepExtra():
             opt_sql_anime_timestamp = input(f"> Anime timestamp? [{colorize('gray', media_mal['timestamp'])} (episode {colorize('gray', media_mal['lastEpisode'])})]: ")
             opt_sql_anime_timestamp = media_mal['timestamp'] if opt_sql_anime_timestamp == "" else opt_sql_anime_timestamp
         else:
-            opt_sql_anime_timestamp = input(f"> Anime timestamp? [0]: ")
+            opt_sql_anime_timestamp = input(f"> Anime timestamp? [{colorize('gray', '0')}]: ")
             opt_sql_anime_timestamp = "0" if opt_sql_anime_timestamp == "" else opt_sql_anime_timestamp
 
         print(f'''INSERT INTO animes (id, title, synopsis, episodes, type, status, genres, tags, rating, `group`, season, presets, location, timestamp)
@@ -83,13 +83,3 @@ VALUES ('{opt_id}', '{opt_sql_anime_title}', '{""}', {opt_sql_anime_episodes}, {
 
         print(opt_sql_episodes_result)
         input("Press enter...")
-
-    opt_torrent = input("> Generate torrent for anime? (y/n) [y]: ")
-    opt_torrent = "y" if opt_torrent == "" else opt_torrent
-    if opt_torrent == "y":
-        if not path.exists(f"/usr/src/nyananime/dest-episodes/{opt_id}/series.torrent"):
-            print(f'Creating torrent...')
-            torrentSubprocess = subprocess.Popen(["../scripts/torrent-create.sh", f"/usr/src/nyananime/dest-episodes/{opt_id}", f"/usr/src/nyananime/dest-episodes/{opt_id}/series.torrent", opt_id, "Auto-generated torrent for Nyan Anime."], stdin=DEVNULL, stdout=DEVNULL, stderr=DEVNULL)
-            torrentSubprocess.wait()
-        else:
-            print(f'Torrent already created. Skipping...')

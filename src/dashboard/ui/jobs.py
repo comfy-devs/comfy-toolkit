@@ -10,18 +10,16 @@ def printJob(job, color="reset"):
     print(f'{colorize(color, f"{jobType} | {jobName} | {jobStatus} | {jobProgress}")}')
 
 def printJobsUI(dashboard):
-    n = len(dashboard.jobs)
-    if dashboard.currentJob != None:
-        n += 1
+    n = len(dashboard.currentJobs) + len(dashboard.jobs)
     if dashboard.jobsUIShowCompleted:
         n += len(dashboard.completedJobs)
 
     system("clear")
     print(colorize("gray", f'Nyan Anime Toolkit - Jobs ({n})'))
     print(colorize("gray", f'{"{:<10}".format("Type")} | {"{:<64}".format("Name")} | {"{:<10}".format("Status")} | {"{:<10}".format("Progress")}'))
-    
-    if dashboard.currentJob != None:
-        printJob(dashboard.currentJob, "bright_blue")
+
+    for job in dashboard.currentJobs:
+        printJob(job, "bright_blue")
     for job in dashboard.jobs:
         printJob(job)
     if dashboard.jobsUIShowCompleted:

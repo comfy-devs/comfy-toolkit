@@ -2,6 +2,7 @@ from os import system
 from util.general import colorize
 from step.select import stepSelect
 from step.transcode import stepTranscode
+from step.torrent import stepTorrent
 from step.extra import stepExtra
 from step.upload import stepUpload
 
@@ -33,25 +34,28 @@ def printMainUI(dashboard):
         system("clear")
         print(f'{colorize("gray", f"Nyan Anime Toolkit - Add a job")}')
         print("1) Transcode (used to transcode anime)")
-        print("2) Back")
+        print("2) Create torrent (used to create a torrent for an anime)")
+        print("3) Upload (used to upload anime)")
+        print("4) Back")
         selection = input("> Selection? [1]: ")
         selection = "1" if selection == "" else selection
 
         if selection == "1":
             stepSelect()
             stepTranscode(dashboard)
+        elif selection == "2":
+            stepTorrent(dashboard)
+        elif selection == "3":
+            stepUpload(dashboard)
     elif selection == "3":
         system("clear")
         print(f'{colorize("gray", f"Nyan Anime Toolkit - Other")}')
         print("1) Extra (used for extra post-processing)")
-        print("2) Upload (used for uploading onto the server)")
         print("3) Back")
         selection = input("> Selection? [1]: ")
         selection = "1" if selection == "" else selection
 
         if selection == "1":
             stepExtra()
-        elif selection == "2":
-            stepUpload()
     elif selection == "4":
         exit(0)

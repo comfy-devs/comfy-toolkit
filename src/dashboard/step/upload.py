@@ -1,50 +1,12 @@
-import subprocess
-from os import system, path
+from os import system
 from util.general import colorize
+from job.upload import UploadJob
 
-def stepUpload():
+def stepUpload(dashboard):
     system("clear")
     print(f'{colorize("gray", f"Nyan Anime Toolkit - Upload")}')
     opt_id = input("> Anime ID? (ID from anilist.co): ")
-    opt_move = input("> Move all files onto a server folder? (y/n) [y]: ")
-    opt_move = "y" if opt_move == "" else opt_move
 
-    if opt_move == "y":
-        i = 0
-        entries = subprocess.getoutput(f"LC_COLLATE=C ls /usr/src/nyananime/dest-episodes/{opt_id}").split("\n")
-        for entry in entries:
-            print(f'Moving episode {colorize("gray", i)}')
-            system(f'mkdir -p "/usr/src/nyananime/server-video/{opt_id}/{i}"')
-            system(f'mkdir -p "/usr/src/nyananime/server-image/{opt_id}/{i}"')
-
-            if path.exists(f"/usr/src/nyananime/dest-episodes/{opt_id}/{i}/episode_x264.mp4"):
-                system(f'mv "/usr/src/nyananime/dest-episodes/{opt_id}/{i}/episode_x264.mp4" "/usr/src/nyananime/server-video/{opt_id}/{i}/episode_x264.mp4"')
-
-            if path.exists(f"/usr/src/nyananime/dest-episodes/{opt_id}/{i}/episode_vp9.webm"):
-                system(f'mv "/usr/src/nyananime/dest-episodes/{opt_id}/{i}/episode_vp9.webm" "/usr/src/nyananime/server-video/{opt_id}/{i}/episode_vp9.webm"')
-           
-            if path.exists(f"/usr/src/nyananime/dest-episodes/{opt_id}/{i}/subs"):
-                system(f'mv "/usr/src/nyananime/dest-episodes/{opt_id}/{i}/subs" "/usr/src/nyananime/server-video/{opt_id}/{i}/subs"')
-            
-            if path.exists(f"/usr/src/nyananime/dest-episodes/{opt_id}/{i}/hls"):
-                system(f'mv "/usr/src/nyananime/dest-episodes/{opt_id}/{i}/hls" "/usr/src/nyananime/server-video/{opt_id}/{i}/hls"')
-
-            if path.exists(f"/usr/src/nyananime/dest-episodes/{opt_id}/{i}/thumbnail.webp"):
-                system(f'mv "/usr/src/nyananime/dest-episodes/{opt_id}/{i}/thumbnail.webp" "/usr/src/nyananime/server-image/{opt_id}/{i}/thumbnail.webp"')
-
-            if path.exists(f"/usr/src/nyananime/dest-episodes/{opt_id}/{i}/chapters.json"):
-                system(f'mv "/usr/src/nyananime/dest-episodes/{opt_id}/{i}/chapters.json" "/usr/src/nyananime/server-video/{opt_id}/{i}/chapters.json"')
-
-            if path.exists(f"/usr/src/nyananime/dest-episodes/{opt_id}/{i}/stats.json"):
-                system(f'mv "/usr/src/nyananime/dest-episodes/{opt_id}/{i}/stats.json" "/usr/src/nyananime/server-video/{opt_id}/{i}/stats.json"')
-
-            system(f'rmdir "/usr/src/nyananime/dest-episodes/{opt_id}/{i}"')
-            i += 1
-
-        if path.exists(f"/usr/src/nyananime/dest-episodes/{opt_id}/poster.webp"):
-            system(f'mv "/usr/src/nyananime/dest-episodes/{opt_id}/poster.webp" "/usr/src/nyananime/server-image/{opt_id}/poster.webp"')
-
-        if path.exists(f"/usr/src/nyananime/dest-episodes/{opt_id}/series.torrent"):
-            system(f'mv "/usr/src/nyananime/dest-episodes/{opt_id}/series.torrent" "/usr/src/nyananime/server-video/{opt_id}/series.torrent"')
-
-        system(f'rmdir "/usr/src/nyananime/dest-episodes/{opt_id}"')
+    job = UploadJob("upload", f"Uploading files from {opt_id}")
+    job.setup(opt_id)
+    dashboard.jobs.append(job)

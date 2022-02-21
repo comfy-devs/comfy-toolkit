@@ -1,7 +1,7 @@
 import subprocess
 from os import system
 from util.general import colorize
-from job.job import Job
+from job.transcoding import TranscodingJob
 
 def stepTranscode(dashboard):
     system("clear")
@@ -38,7 +38,7 @@ def stepTranscode(dashboard):
     i = 0
     entries = subprocess.getoutput(f"LC_COLLATE=C ls /usr/src/nyananime/src-episodes/{opt_id}").split("\n")
     for entry in entries:
-        job = Job("transcoding", entry)
-        job.setupTranscoding(opt_id, i, entry, opt_codec, [opt_min_bitrate, opt_bitrate, opt_max_bitrate])
+        job = TranscodingJob("transcoding")
+        job.setup(opt_id, i, entry, opt_codec, [opt_min_bitrate, opt_bitrate, opt_max_bitrate])
         dashboard.jobs.append(job)
         i += 1

@@ -115,7 +115,7 @@ def fetchMAL(animeID, episodes):
             iL += 1
         else:
             break
-
+    
     return {
         "timestamp": int(t.timestamp()),
         "lastEpisode": iL

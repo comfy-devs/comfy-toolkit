@@ -11,14 +11,16 @@ Building is done with <code>docker-compose build</code>.
 Running is done with <code>docker-compose run nyananime-toolkit /bin/bash</code>.  
 Shutting down is with <code>docker-compose down</code>.
 > 1) Edit volumes in <code>docker-compose.yml</code>, to mount whatever folders you want  
+> 2) (Optional) Edit <code>.env-dummy</code> and save it as <code>.env</code> to be able to upload  
+> 3) (Optional) Create an SSH key, ssh-copy-id to the host and save it as <code>ssh/id_rsa</code> to wherever you mounted the folder (so <code>/mnt/data/nyananime/ssh/id_rsa</code> in my case)  
 
 ## Scripts included
 | Script                        | Description                                               |
 | ----------------------------- | --------------------------------------------------------- |
 | `python dashboard.py`         | Used for processing anime series, in a GUI like form.     |
-| `ffmpeg-x264-xx`        | Processes an episode with libx264.                        |
-| `ffmpeg-x264-hls`       | Generates HLS streams from an episode.                    |
-| `ffmpeg-vp9`            | Processes an episode with libvpx-vp9.                     |
+| `ffmpeg-x264-xx`              | Processes an episode with libx264.                        |
+| `ffmpeg-x264-hls`             | Generates HLS streams from an episode.                    |
+| `ffmpeg-vp9`                  | Processes an episode with libvpx-vp9.                     |
 | `ffmpeg-thumbnail`            | Extracts a thumbnail from an episode.                     |
 | `ffmpeg-subs`                 | Extracts subtitles from an episode.                       |
 | `ffmpeg-chapters`             | Extracts chapters from an episode.                        |

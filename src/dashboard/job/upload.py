@@ -12,14 +12,14 @@ class UploadJob(Job):
         self.jobStatus = "working"
         DEVNULL = open(os.devnull, 'wb')
         
-        self.jobSubprocess = subprocess.Popen(["rsync", "-am", "--info=progress2", "--include=*/", "--include=*.webp", "--exclude=*", "-e", "ssh -i /usr/src/nyananime/ssh/rsa_id", f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/", f"{os.environ['NYANANIME_IMAGE_USER']}@{os.environ['NYANANIME_IMAGE_HOST']}:{os.environ['NYANANIME_IMAGE_PATH']}/{self.jobAnimeID}/"], stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines='\r')
+        self.jobSubprocess = subprocess.Popen(["rsync", "-am", "--info=progress2", "--include=*/", "--include=*.webp", "--exclude=*", "-e", "ssh -o StrictHostKeyChecking=no -i /usr/src/nyananime/ssh/rsa_id", f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/", f"{os.environ['NYANANIME_IMAGE_USER']}@{os.environ['NYANANIME_IMAGE_HOST']}:{os.environ['NYANANIME_IMAGE_PATH']}/{self.jobAnimeID}/"], stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines='\r')
         while True:
             line = self.jobSubprocess.stdout.readline()
             if not line: break
         self.jobSubprocess.wait()
         
         self.jobName = f"Uploading video files for '{self.jobAnimeID}'..."
-        self.jobSubprocess = subprocess.Popen(["rsync", "-am", "--info=progress2", "--include=*/", "--exclude=*.webp", "-e", "ssh -i /usr/src/nyananime/ssh/rsa_id", f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/", f"{os.environ['NYANANIME_VIDEO_USER']}@{os.environ['NYANANIME_VIDEO_HOST']}:{os.environ['NYANANIME_VIDEO_PATH']}/{self.jobAnimeID}/"], stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines='\r')
+        self.jobSubprocess = subprocess.Popen(["rsync", "-am", "--info=progress2", "--include=*/", "--exclude=*.webp", "-e", "ssh -o StrictHostKeyChecking=no -i /usr/src/nyananime/ssh/rsa_id", f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/", f"{os.environ['NYANANIME_VIDEO_USER']}@{os.environ['NYANANIME_VIDEO_HOST']}:{os.environ['NYANANIME_VIDEO_PATH']}/{self.jobAnimeID}/"], stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines='\r')
         while True:
             line = self.jobSubprocess.stdout.readline()
             if not line: break

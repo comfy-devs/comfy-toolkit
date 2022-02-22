@@ -9,3 +9,5 @@ services:
       context: ./
       dockerfile: .docker/images/nyananime-toolkit/Dockerfile
     tty: yes
+    env_file:
+    - .env

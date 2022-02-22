@@ -7,6 +7,6 @@ def stepUpload(dashboard):
     print(f'{colorize("gray", f"Nyan Anime Toolkit - Upload")}')
     opt_id = input("> Anime ID? (ID from anilist.co): ")
 
-    job = UploadJob("upload", f"Uploading files from {opt_id}")
+    job = UploadJob("upload")
     job.setup(opt_id)
     dashboard.jobs.append(job)

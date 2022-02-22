@@ -1,6 +1,5 @@
 # Stage: build
 FROM archlinux:latest
-RUN pacman --noconfirm -Syu
 
 # Create new user (build)
 RUN useradd --shell=/bin/bash build
@@ -8,7 +7,8 @@ RUN echo "build ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
 # Build vmaf-git
 USER root
-RUN pacman --noconfirm -S git base-devel wget
+RUN pacman --noconfirm -Syu gcc-libs doxygen git meson nasm vim
+RUN pacman --noconfirm -Sy base-devel wget
 USER build
 WORKDIR /tmp
 
@@ -18,7 +18,7 @@ RUN cd vmaf-git && makepkg --noconfirm -si
 
 # Build FFmpeg
 USER root
-RUN pacman --noconfirm -S libfdk-aac
+RUN pacman --noconfirm -Sy libfdk-aac
 USER build
 WORKDIR /tmp
 
@@ -30,7 +30,7 @@ RUN cd ffmpeg-git && makepkg --noconfirm -si
 
 # Build src
 USER root
-RUN pacman --noconfirm -S python python-pip nodejs yarn bc jq libwebp
+RUN pacman --noconfirm -Sy python python-pip nodejs yarn bc jq libwebp openssh rsync
 WORKDIR /usr/src/app
 
 COPY . .
@@ -42,7 +42,7 @@ RUN cd src/create-torrent && yarn run build && yarn remove $(cat package.json | 
 RUN cd src/create-torrent && sed -i 's/flat()/flat(64)/' node_modules/create-torrent/get-files.js
 
 # Install extra packages
-RUN pacman --noconfirm -S neovim ranger
+RUN pacman --noconfirm -Sy neovim ranger
 
 # Stage: run
 WORKDIR /usr/src/app/src/dashboard

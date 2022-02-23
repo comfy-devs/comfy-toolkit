@@ -19,8 +19,9 @@ def stepExtra():
     if opt_poster == "y":
         opt_poster_url = input(f"> Poster URL? [{colorize('gray', media['coverImage']['extraLarge'])}]: ")
         opt_poster_url = media["coverImage"]["extraLarge"] if opt_poster_url == "" else opt_poster_url
-        system(f"wget -O /usr/src/nyananime/dest-episodes/{opt_id}/poster_in {opt_poster_url}")
-        system(f"cwebp -q 90 /usr/src/nyananime/dest-episodes/{opt_id}/poster_in -o /usr/src/nyananime/dest-episodes/{opt_id}/poster.webp")
+        system(f"wget -O /usr/src/nyananime/dest-episodes/{opt_id}/poster_in {opt_poster_url} > /dev/null")
+        system(f"convert /usr/src/nyananime/dest-episodes/{opt_id}/poster_in /usr/src/nyananime/dest-episodes/{opt_id}/poster.jpg")
+        system(f"cwebp -quiet -q 90 /usr/src/nyananime/dest-episodes/{opt_id}/poster_in -o /usr/src/nyananime/dest-episodes/{opt_id}/poster.webp")
         system(f"rm /usr/src/nyananime/dest-episodes/{opt_id}/poster_in")
 
     # TODO: Finish auto-completing for group, season

@@ -30,7 +30,7 @@ RUN cd ffmpeg-git && makepkg --noconfirm -si
 
 # Build src
 USER root
-RUN pacman --noconfirm -Sy python python-pip nodejs yarn bc jq libwebp openssh rsync
+RUN pacman --noconfirm -Sy python python-pip nodejs yarn bc jq libwebp openssh rsync imagemagick
 WORKDIR /usr/src/app
 
 COPY . .

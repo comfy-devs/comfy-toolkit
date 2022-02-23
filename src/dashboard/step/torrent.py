@@ -9,4 +9,4 @@ def stepTorrent(dashboard):
 
     job = TorrentJob("torrent")
     job.setup(opt_id)
-    dashboard.jobs.append(job)
+    dashboard.addJob(job)

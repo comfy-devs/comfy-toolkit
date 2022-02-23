@@ -40,5 +40,5 @@ def stepTranscode(dashboard):
     for entry in entries:
         job = TranscodingJob("transcoding")
         job.setup(opt_id, i, entry, opt_codec, [opt_min_bitrate, opt_bitrate, opt_max_bitrate])
-        dashboard.jobs.append(job)
+        dashboard.addJob(job)
         i += 1

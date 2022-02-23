@@ -15,7 +15,14 @@ class Dashboard:
     def asyncRun(self):
         if self.jobsUIEnabled == True:
             printJobsUI(self)
-        
+
+        self.checkJobs()
+
+    def addJob(self):
+        self.jobs.append(job)
+        self.checkJobs()
+    
+    def checkJobs(self):
         currentTranscodingJob = next(filter(lambda e: e.jobType == "transcoding", self.currentJobs), None)
         if currentTranscodingJob == None:
             availableTranscodingJob = next(filter(lambda e: e.jobType == "transcoding", self.jobs), None)
@@ -26,6 +33,7 @@ class Dashboard:
         elif currentTranscodingJob.is_alive() == False:
             self.completedJobs.append(currentTranscodingJob)
             self.currentJobs.remove(currentTranscodingJob)
+            self.checkJobs()
 
         currentTorrentJob = next(filter(lambda e: e.jobType == "torrent", self.currentJobs), None)
         if currentTorrentJob == None:
@@ -37,6 +45,7 @@ class Dashboard:
         elif currentTorrentJob.is_alive() == False:
             self.completedJobs.append(currentTorrentJob)
             self.currentJobs.remove(currentTorrentJob)
+            self.checkJobs()
 
         currentUploadJob = next(filter(lambda e: e.jobType == "upload", self.currentJobs), None)
         if currentUploadJob == None:
@@ -48,6 +57,7 @@ class Dashboard:
         elif currentUploadJob.is_alive() == False:
             self.completedJobs.append(currentUploadJob)
             self.currentJobs.remove(currentUploadJob)
+            self.checkJobs()
 
     def run(self):
         setInterval(1, self.asyncRun)

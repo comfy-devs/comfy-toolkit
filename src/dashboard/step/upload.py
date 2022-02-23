@@ -9,4 +9,4 @@ def stepUpload(dashboard):
 
     job = UploadJob("upload")
     job.setup(opt_id)
-    dashboard.jobs.append(job)
+    dashboard.addJob(job)

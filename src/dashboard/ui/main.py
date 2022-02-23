@@ -51,7 +51,7 @@ def printMainUI(dashboard):
         system("clear")
         print(f'{colorize("gray", f"Nyan Anime Toolkit - Other")}')
         print("1) Extra (used for extra post-processing)")
-        print("3) Back")
+        print("2) Back")
         selection = input("> Selection? [1]: ")
         selection = "1" if selection == "" else selection
 

@@ -6,6 +6,15 @@ class Job(threading.Thread):
         threading.Thread.__init__(self)
         self.jobType = jobType
         self.jobName = "??"
-        self.jobStatus = "waiting"
         self.jobProgress = 0
+        self.jobSpeed = "--"
         self.jobSubprocess = None
+
+    def startSection(self, name):
+        self.jobName = name
+        self.jobProgress = 0
+        self.jobSpeed = "??"
+
+    def endSection(self):
+        self.jobProgress = 100
+        self.jobSpeed = "--"

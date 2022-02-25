@@ -5,20 +5,20 @@ from job.job import Job
 
 class TorrentJob(Job):
     def setup(self, jobAnimeID):
-        self.jobName = f"Creating torrent for '{jobAnimeID}'..."
+        self.jobName = f"Torrent job for '{jobAnimeID}'..."
         self.jobAnimeID = jobAnimeID
 
     def run(self):
-        self.jobStatus = "working"
         DEVNULL = open(os.devnull, 'wb')
         
-        self.jobSubprocess = subprocess.Popen(["../scripts/torrent-create.sh", f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}", f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/series.torrent", self.jobAnimeID, "Auto-generated torrent for Nyan Anime."], stdin=DEVNULL, stdout=subprocess.PIPE, stderr=DEVNULL)
+        self.startSection(f"Creating torrent for '{self.jobAnimeID}'")
+        self.jobSubprocess = subprocess.Popen(["../scripts/torrent-create.sh", f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}", f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/series.torrent", self.jobAnimeID, "Auto-generated torrent for Nyan Anime."], stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         while True:
             line = self.jobSubprocess.stdout.readline()
             if not line: break
             self.jobProgress = float(line)
         self.jobSubprocess.wait()
+        self.endSection()
         
         self.jobName = f"Torrent job for '{self.jobAnimeID}'"
-        self.jobStatus = "finished"
         DEVNULL.close()

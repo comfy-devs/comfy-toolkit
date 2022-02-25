@@ -18,7 +18,7 @@ class Dashboard:
 
         self.checkJobs()
 
-    def addJob(self):
+    def addJob(self, job):
         self.jobs.append(job)
         self.checkJobs()
     

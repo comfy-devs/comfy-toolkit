@@ -31,10 +31,13 @@ class TranscodingJob(Job):
         while True:
             line = self.jobSubprocess.stderr.readline()
             if not line: break
-            if "frame=" in line:
-                currentFrame = int(line[len("frame="):line.index("fps=")])
-                self.jobProgress = round((currentFrame / frames) * 100, 2)
-                self.jobSpeed = line[line.index("speed=")+len("speed="):line.index("\n")]
+            try:
+                if "frame=" in line:
+                    currentFrame = int(line[len("frame="):line.index("fps=")])
+                    self.jobProgress = round((currentFrame / frames) * 100, 2)
+                    self.jobSpeed = line[line.index("speed=")+len("speed="):line.index("\n")]
+            except:
+                continue
         self.jobSubprocess.wait()
 
     def run(self):
@@ -118,11 +121,11 @@ class TranscodingJob(Job):
                     continue
                 processedSubtitles.append(subtitleStreamLanguage)
 
-                subtitleMedia = f'#EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-ID="subs",NAME="{languages.get(part2b=subtitleStreamLanguage).name}",DEFAULT={"YES" if subtitleStreamLanguage == "eng" else "NO"},FORCED=NO,URI="../subs/{subtitleStreamLanguage}.m3u8",LANGUAGE="{subtitleStreamLanguage}"'
+                subtitleMedia = f'#EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-ID="subs",NAME="{languages.get(part2b=subtitleStreamLanguage).name}",DEFAULT={"YES" if subtitleStreamLanguage == "eng" else "NO"},FORCED=NO,URI="../subs/{subtitleStreamLanguage}.m3u8",LANGUAGE="{subtitleStreamLanguage}"\n'
                 if subtitleMedia not in masterLines:
                     if i == 0:
                         masterLines.append("\n")
-                    masterLines.append(subtitleMedia + "\n")
+                    masterLines.append(subtitleMedia)
 
         with open(f'/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/hls/{"x264" if self.jobCodec == "x264" else "vp9"}/master.m3u8', "w") as f:
             f.writelines(masterLines)

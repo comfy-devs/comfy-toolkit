@@ -2,18 +2,15 @@ import subprocess
 from os import system
 from util.general import colorize, getFiles
 
-def stepSelect():
-    system("clear")
-    print(f'{colorize("gray", f"Nyan Anime Toolkit - Select")}')
-    opt_id = input("> Anime ID? (ID from anilist.co): ")
+def stepSelect(dashboard, opt_id):
     files = getFiles(opt_id)
     
     if files["src_files"] != "0":
-        opt_delete_src = input("> Existing source files found! Delete them? (y/n) [n]: ")
+        opt_delete_src = input("> Existing symlink to source found! Delete it? (y/n) [n]: ")
         opt_delete_src = "n" if opt_delete_src == "" else opt_delete_src
         if opt_delete_src == "y":
-            print("Deleting source files...")
-            system(f"rm -rf /usr/src/nyananime/src-episodes/{opt_id}/*")
+            print("Deleting symlink to source...")
+            system(f"rm /usr/src/nyananime/src-episodes/{opt_id}")
             files = getFiles(opt_id)
     
     if files["src_files"] == "0":

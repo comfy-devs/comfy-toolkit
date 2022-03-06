@@ -5,11 +5,10 @@ from ui.jobs import printJobsUI
 
 class Dashboard:
     def __init__(self):
-        self.jobs = []
-        self.currentJobs = []
-        self.completedJobs = []
+        self.jobCollections = []
         self.jobsUIEnabled = False
         self.jobsUIShowCompleted = True
+        self.jobsUICollapse = False
         self.run()
         
     def asyncRun(self):
@@ -18,46 +17,40 @@ class Dashboard:
 
         self.checkJobs()
 
-    def addJob(self, job):
-        self.jobs.append(job)
+    def addJobCollection(self, jobCollection):
+        self.jobCollections.append(jobCollection)
         self.checkJobs()
     
     def checkJobs(self):
-        currentTranscodingJob = next(filter(lambda e: e.jobType == "transcoding", self.currentJobs), None)
-        if currentTranscodingJob == None:
-            availableTranscodingJob = next(filter(lambda e: e.jobType == "transcoding", self.jobs), None)
-            if availableTranscodingJob != None:
-                self.jobs.remove(availableTranscodingJob)
-                self.currentJobs.append(availableTranscodingJob)
-                availableTranscodingJob.start()
-        elif currentTranscodingJob.is_alive() == False:
-            self.completedJobs.append(currentTranscodingJob)
-            self.currentJobs.remove(currentTranscodingJob)
-            self.checkJobs()
+        currentJobTypes = []
+        for jobCollection in self.jobCollections:
+            if jobCollection.currentJob != None:
+                if jobCollection.currentJob.is_alive():
+                    currentJobTypes.append(jobCollection.currentJob.jobType)
+                else:
+                    jobCollection.completedJobs.append(jobCollection.currentJob)
+                    jobCollection.currentJob = None
+                continue
+            
+            if len(jobCollection.jobs) < 1:
+                return
+            firstJob = jobCollection.jobs[0]
 
-        currentTorrentJob = next(filter(lambda e: e.jobType == "torrent", self.currentJobs), None)
-        if currentTorrentJob == None:
-            availableTorrentJob = next(filter(lambda e: e.jobType == "torrent", self.jobs), None)
-            if availableTorrentJob != None:
-                self.jobs.remove(availableTorrentJob)
-                self.currentJobs.append(availableTorrentJob)
-                availableTorrentJob.start()
-        elif currentTorrentJob.is_alive() == False:
-            self.completedJobs.append(currentTorrentJob)
-            self.currentJobs.remove(currentTorrentJob)
-            self.checkJobs()
-
-        currentUploadJob = next(filter(lambda e: e.jobType == "upload", self.currentJobs), None)
-        if currentUploadJob == None:
-            availableUploadJob = next(filter(lambda e: e.jobType == "upload", self.jobs), None)
-            if availableUploadJob != None:
-                self.jobs.remove(availableUploadJob)
-                self.currentJobs.append(availableUploadJob)
-                availableUploadJob.start()
-        elif currentUploadJob.is_alive() == False:
-            self.completedJobs.append(currentUploadJob)
-            self.currentJobs.remove(currentUploadJob)
-            self.checkJobs()
+            if "transcoding" not in currentJobTypes and firstJob.jobType == "transcoding":
+                jobCollection.jobs.remove(firstJob)
+                jobCollection.currentJob = firstJob
+                jobCollection.currentJob.start()
+                currentJobTypes.append("transcoding")
+            elif "torrent" not in currentJobTypes and firstJob.jobType == "torrent":
+                jobCollection.jobs.remove(firstJob)
+                jobCollection.currentJob = firstJob
+                jobCollection.currentJob.start()
+                currentJobTypes.append("torrent")
+            elif "upload" not in currentJobTypes and firstJob.jobType == "upload":
+                jobCollection.jobs.remove(firstJob)
+                jobCollection.currentJob = firstJob
+                jobCollection.currentJob.start()
+                currentJobTypes.append("upload")
 
     def run(self):
         setInterval(1, self.asyncRun)

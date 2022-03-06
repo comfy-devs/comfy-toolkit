@@ -1,5 +1,4 @@
 import threading
-from util.general import colorize
 
 class Job(threading.Thread):
     def __init__(self, jobType):

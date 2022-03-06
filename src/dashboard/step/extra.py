@@ -3,12 +3,13 @@ from os import system, path
 from util.general import colorize
 from util.api import fetchAnilist, fetchMAL
 
-def stepExtra():
-    system("clear")
-    print(f'{colorize("gray", f"Nyan Anime Toolkit - Extra")}')
-    opt_id = input("> Anime ID? (ID from anilist.co): ")
-    opt_mal_id = input("> Anime ID? (ID from myanimelist.net): ")
+def downloadPoster(opt_id, opt_poster_url=""):
+    system(f"wget -O /usr/src/nyananime/dest-episodes/{opt_id}/poster_in {opt_poster_url} > /dev/null")
+    system(f"convert /usr/src/nyananime/dest-episodes/{opt_id}/poster_in /usr/src/nyananime/dest-episodes/{opt_id}/poster.jpg")
+    system(f"cwebp -quiet -q 90 /usr/src/nyananime/dest-episodes/{opt_id}/poster_in -o /usr/src/nyananime/dest-episodes/{opt_id}/poster.webp")
+    system(f"rm /usr/src/nyananime/dest-episodes/{opt_id}/poster_in")
 
+def stepExtra(opt_id, opt_mal_id):
     media = fetchAnilist(opt_id)
     media_mal = None
     if opt_mal_id != "":
@@ -19,12 +20,9 @@ def stepExtra():
     if opt_poster == "y":
         opt_poster_url = input(f"> Poster URL? [{colorize('gray', media['coverImage']['extraLarge'])}]: ")
         opt_poster_url = media["coverImage"]["extraLarge"] if opt_poster_url == "" else opt_poster_url
-        system(f"wget -O /usr/src/nyananime/dest-episodes/{opt_id}/poster_in {opt_poster_url} > /dev/null")
-        system(f"convert /usr/src/nyananime/dest-episodes/{opt_id}/poster_in /usr/src/nyananime/dest-episodes/{opt_id}/poster.jpg")
-        system(f"cwebp -quiet -q 90 /usr/src/nyananime/dest-episodes/{opt_id}/poster_in -o /usr/src/nyananime/dest-episodes/{opt_id}/poster.webp")
-        system(f"rm /usr/src/nyananime/dest-episodes/{opt_id}/poster_in")
+        downloadPoster(opt_id, opt_poster_url)
 
-    # TODO: Finish auto-completing for group, season
+    # TODO: Finish auto-completing for synopsis, group, season
     opt_sql_anime = input("> Generate SQL query for anime? (y/n) [y]: ")
     opt_sql_anime = "y" if opt_sql_anime == "" else opt_sql_anime
     if opt_sql_anime == "y":

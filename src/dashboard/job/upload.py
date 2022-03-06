@@ -4,7 +4,8 @@ from util.general import colorize
 from job.job import Job
 
 class UploadJob(Job):
-    def setup(self, jobAnimeID):
+    def __init__(self, jobAnimeID):
+        Job.__init__(self, "upload")
         self.jobAnimeID = jobAnimeID
         self.jobName = f"Upload job for '{self.jobAnimeID}'"
 

@@ -23,6 +23,8 @@ def colorize(color, text):
         "gray": "\033[0;37m",
         "bright_blue": "\033[0;94m",
         "bright_green": "\033[0;92m",
+        "yellow": "\033[0;33m",
+        "white": "\033[0;37m",
         "reset": "\033[0m"
     }
     return f"{colors[color]}{text}{colors['reset']}"

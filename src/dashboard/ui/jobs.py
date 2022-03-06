@@ -1,32 +1,40 @@
+import functools
 from os import system
 from util.general import colorize
 
 def printJob(job, status, color="reset"):
-    jobType = "{:<10}".format(job.jobType[:10])
-    jobName = "{:<64}".format(job.jobName[:64])
-    jobStatus = "{:<10}".format(status[:10])
+    jobType = "{:<12}".format(job.jobType[:12])
+    jobName = "{:<72}".format(job.jobName[:72])
+    jobStatus = "{:<12}".format(status[:12])
     jobProgress = str(job.jobProgress) + "%"
-    jobProgress = "{:<10}".format(jobProgress[:10])
-    print(f'{colorize(color, f"{jobType} | {jobName} | {jobStatus} | {jobProgress} | {job.jobSpeed}")}')
+    jobProgress = "{:<8}".format(jobProgress[:8])
+    jobSpeed = "{:<8}".format(job.jobSpeed[:8])
+    print(f'|- {colorize(color, f"{jobType} | {jobName} | {jobStatus} | {jobProgress} | {jobSpeed}")}')
 
+# TODO: add ability to collapse jobs under the same id
 def printJobsUI(dashboard):
-    n = len(dashboard.currentJobs) + len(dashboard.jobs)
+    n = functools.reduce(lambda acc, curr: acc + len(curr.jobs) + (1 if curr.currentJob != None else 0), dashboard.jobCollections, 0)
     if dashboard.jobsUIShowCompleted:
-        n += len(dashboard.completedJobs)
+        n += functools.reduce(lambda acc, curr: acc + len(curr.completedJobs), dashboard.jobCollections, 0)
 
     system("clear")
     print(colorize("gray", f'Nyan Anime Toolkit - Jobs ({n})'))
-    print(colorize("gray", f'{"{:<10}".format("Type")} | {"{:<64}".format("Name")} | {"{:<10}".format("Status")} | {"{:<10}".format("Progress")} | {"{:<10}".format("Speed")}'))
 
-    for job in dashboard.currentJobs:
-        printJob(job, "in progress", "bright_blue")
-    for job in dashboard.jobs:
-        printJob(job, "waiting")
-    if dashboard.jobsUIShowCompleted:
-        for job in dashboard.completedJobs:
-            printJob(job, "completed", "bright_green")
+    for jobCollection in dashboard.jobCollections:
+        print(f"| {colorize('bright_blue' if jobCollection.currentJob != None else ('bright_green' if len(jobCollection.jobs) == 0 else 'white'), jobCollection.name)}")
+        if dashboard.jobsUICollapse:
+            continue
+
+        if jobCollection.currentJob != None:
+            printJob(jobCollection.currentJob, "in progress", "bright_blue")
+        for job in jobCollection.jobs:
+            printJob(job, "waiting")
+        if dashboard.jobsUIShowCompleted:
+            for job in jobCollection.completedJobs:
+                printJob(job, "completed", "bright_green")
+        print("")
     
-    print("")
     print(f"1) {'Hide' if dashboard.jobsUIShowCompleted else 'Show'} completed jobs")
-    print("2) Back")
-    print("> Selection? [2]: ")
+    print(f"2) {'Uncollapse' if dashboard.jobsUICollapse else 'Collapse'} jobs")
+    print("3) Back")
+    print("> Selection? [3]: ")

@@ -2,11 +2,9 @@ import subprocess
 from os import system
 from util.general import colorize
 from job.transcoding import TranscodingJob
+from job.collection import JobCollection
 
-def stepTranscode(dashboard):
-    system("clear")
-    print(f'{colorize("gray", f"Nyan Anime Toolkit - Transcode")}')
-    opt_id = input("> Anime ID? (ID from anilist.co): ")
+def stepTranscode(dashboard, opt_id):
     opt_codec = input("> Encoding codec? (x264/vp9) [x264]: ")
     opt_codec = "x264" if opt_codec == "" else opt_codec
 
@@ -36,9 +34,10 @@ def stepTranscode(dashboard):
         opt_max_bitrate = "2210k" if opt_max_bitrate == "" else opt_max_bitrate
 
     i = 0
+    jobs = []
     entries = subprocess.getoutput(f"LC_COLLATE=C ls /usr/src/nyananime/src-episodes/{opt_id}").split("\n")
     for entry in entries:
-        job = TranscodingJob("transcoding")
-        job.setup(opt_id, i, entry, opt_codec, [opt_min_bitrate, opt_bitrate, opt_max_bitrate])
-        dashboard.addJob(job)
+        jobs.append(TranscodingJob(opt_id, i, entry, opt_codec, [opt_min_bitrate, opt_bitrate, opt_max_bitrate]))
         i += 1
+    
+    return jobs

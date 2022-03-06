@@ -8,7 +8,7 @@ import { readFileSync, writeFileSync } from "fs";
     - same subtitles with different timestamps */
 
 const tRegex = new RegExp("(\\d\\d:\\d\\d.\\d\\d\\d) --> (\\d\\d:\\d\\d.\\d\\d\\d)", "gm");
-const mRegex = new RegExp("m (\\d+?(?= ))(.*)", "gm");
+const mRegex = new RegExp("m ((\\d|-)+?(?= ))(.*)", "gm");
 
 const input = readFileSync(process.argv[2]).toString();
 const lines = input.split("\n");

@@ -100,9 +100,10 @@ def fetchMAL(animeID, episodes):
     broadcastMinute = 0
     if(len(broadcast) > 0):
         broadcast = broadcast[0].text
-        broadcast = broadcast[(broadcast.index("at ") + 3):broadcast.index(" (")]
-        broadcastHour = int(broadcast[:broadcast.index(":")])
-        broadcastMinute = int(broadcast[(broadcast.index(":") + 1):])
+        if "at " in broadcast:
+            broadcast = broadcast[(broadcast.index("at ") + 3):broadcast.index(" (")]
+            broadcastHour = int(broadcast[:broadcast.index(":")])
+            broadcastMinute = int(broadcast[(broadcast.index(":") + 1):])
 
     tz = timezone(timedelta(hours=9))
     t = datetime(airedYear, airedMonth, airedDay, broadcastHour, broadcastMinute, 0, 0, tz)

@@ -4,7 +4,7 @@ from util.general import colorize
 from job.transcoding import TranscodingJob
 from job.collection import JobCollection
 
-def stepTranscode(dashboard, opt_id):
+def stepTranscode(dashboard, opt_id, i=0):
     opt_codec = input("> Encoding codec? (x264/vp9) [x264]: ")
     opt_codec = "x264" if opt_codec == "" else opt_codec
 
@@ -14,12 +14,11 @@ def stepTranscode(dashboard, opt_id):
     opt_bitrate = ""
     opt_max_bitrate = ""
     if opt_codec == "vp9":
-        entries = subprocess.getoutput(f"LC_COLLATE=C ls /usr/src/nyananime/dest-episodes/{opt_id}").split("\n")
+        entries = subprocess.getoutput(f'find /usr/src/nyananime/dest-episodes/{opt_id} -type f -name "*.mp4" | sort').split("\n")
         if len(entries) > 0:
             print("Listing bitrates of previous transcodes...")
             for entry in entries:
-                v_file = subprocess.getoutput(f'find "/usr/src/nyananime/dest-episodes/{opt_id}/{entry}" -name *.mp4')
-                v_bitrate = subprocess.getoutput(f'ffprobe -i "{v_file}" -v quiet -select_streams v:0 -show_entries stream=bit_rate -hide_banner -of default=noprint_wrappers=1:nokey=1')
+                v_bitrate = subprocess.getoutput(f'ffprobe -i "{entry}" -v quiet -select_streams v:0 -show_entries stream=bit_rate -hide_banner -of default=noprint_wrappers=1:nokey=1')
                 try:
                     v_bitrate = round(float(v_bitrate) / 1000000, 2)
                     print(f'Bitrate for episode \'{colorize("gray", entry)}\': {v_bitrate} Mb/s')
@@ -33,9 +32,8 @@ def stepTranscode(dashboard, opt_id):
         opt_max_bitrate = input("> Maximal bitrate? (recommended: (average * 0.65)k) [2210k]: ")
         opt_max_bitrate = "2210k" if opt_max_bitrate == "" else opt_max_bitrate
 
-    i = 0
     jobs = []
-    entries = subprocess.getoutput(f"LC_COLLATE=C ls /usr/src/nyananime/src-episodes/{opt_id}").split("\n")
+    entries = subprocess.getoutput(f'find /usr/src/nyananime/src-episodes/{opt_id} -type f -name "*.mkv" | sort').split("\n")
     for entry in entries:
         jobs.append(TranscodingJob(opt_id, i, entry, opt_codec, [opt_min_bitrate, opt_bitrate, opt_max_bitrate]))
         i += 1

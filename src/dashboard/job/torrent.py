@@ -6,7 +6,7 @@ from job.job import Job
 class TorrentJob(Job):
     def __init__(self, jobAnimeID):
         Job.__init__(self, "torrent")
-        self.jobName = f"Torrent job for '{jobAnimeID}'..."
+        self.jobName = f"Torrent job for '{jobAnimeID}'"
         self.jobAnimeID = jobAnimeID
 
     def run(self):

@@ -160,5 +160,5 @@ class TranscodingJob(Job):
         # else:
         #     self.jobLogs.append(f'Stats already generated. Skipping...')
         
-        self.jobName = f"Transcoding job '{self.jobSrcFile}' ({self.jobCodec})"
+        self.jobName = f"Transcoding job for '{self.jobSrcFile}'"
         DEVNULL.close()

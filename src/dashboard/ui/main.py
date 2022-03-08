@@ -1,4 +1,4 @@
-from os import system
+from os import system, path
 from util.general import colorize
 from step.select import stepSelect
 from step.transcode import stepTranscode

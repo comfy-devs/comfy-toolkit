@@ -14,7 +14,7 @@ def stepTranscode(dashboard, opt_id, i=0):
     opt_bitrate = ""
     opt_max_bitrate = ""
     if opt_codec == "vp9":
-        entries = subprocess.getoutput(f'find /usr/src/nyananime/dest-episodes/{opt_id} -type f -name "*.mp4" | sort').split("\n")
+        entries = subprocess.getoutput(f'find /usr/src/nyananime/dest-episodes/{opt_id}/ -type f -name "*.mp4" -printf "%P\\n" | sort').split("\n")
         if len(entries) > 0:
             print("Listing bitrates of previous transcodes...")
             for entry in entries:
@@ -33,7 +33,7 @@ def stepTranscode(dashboard, opt_id, i=0):
         opt_max_bitrate = "2210k" if opt_max_bitrate == "" else opt_max_bitrate
 
     jobs = []
-    entries = subprocess.getoutput(f'find /usr/src/nyananime/src-episodes/{opt_id} -type f -name "*.mkv" | sort').split("\n")
+    entries = subprocess.getoutput(f'find /usr/src/nyananime/src-episodes/{opt_id}/ -type f -name "*.mkv" -printf "%P\\n" | sort').split("\n")
     for entry in entries:
         jobs.append(TranscodingJob(opt_id, i, entry, opt_codec, [opt_min_bitrate, opt_bitrate, opt_max_bitrate]))
         i += 1

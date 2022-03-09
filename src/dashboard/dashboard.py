@@ -33,7 +33,7 @@ class Dashboard:
                 continue
             
             if len(jobCollection.jobs) < 1:
-                return
+                continue
             firstJob = jobCollection.jobs[0]
 
             if "transcoding" not in currentJobTypes and firstJob.jobType == "transcoding":

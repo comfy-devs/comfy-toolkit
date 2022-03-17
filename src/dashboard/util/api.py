@@ -106,18 +106,25 @@ def fetchMAL(animeID, episodes):
             broadcastMinute = int(broadcast[(broadcast.index(":") + 1):])
 
     tz = timezone(timedelta(hours=9))
-    t = datetime(airedYear, airedMonth, airedDay, broadcastHour, broadcastMinute, 0, 0, tz)
+    timestamp = datetime(airedYear, airedMonth, airedDay, broadcastHour, broadcastMinute, 0, 0, tz)
 
-    iL = 1
+    episodeIndex = 1
     episodes = 9999 if episodes == 0 else episodes
     for i in range(episodes - 1):
-        if t + timedelta(days=7) < datetime.now(tz):
-            t += timedelta(days=7)
-            iL += 1
+        if timestamp + timedelta(days=7) < datetime.now(tz):
+            timestamp += timedelta(days=7)
+            episodeIndex += 1
         else:
             break
+
+    episodesUrl = content.find_all('a', text='Episodes')[0]["href"]
+    r = requests.get(episodesUrl)
+    content = BeautifulSoup(r.content, 'html.parser')
+    elements = content.find_all('a', class_='fl-l')
+    episodes = list(map(lambda e: e.text, elements))
     
     return {
-        "timestamp": int(t.timestamp()),
-        "lastEpisode": iL
+        "_lastEpisode": episodeIndex,
+        "episodes": episodes,
+        "timestamp": int(timestamp.timestamp()),
     }

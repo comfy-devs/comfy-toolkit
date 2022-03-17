@@ -30,7 +30,7 @@ RUN cd ffmpeg-git && makepkg --noconfirm -si
 
 # Build src
 USER root
-RUN pacman --noconfirm -Sy python python-pip nodejs yarn bc jq libwebp openssh rsync imagemagick
+RUN pacman --noconfirm -Sy python python-pip nodejs yarn bc jq libwebp openssh rsync imagemagick ranger transmission-cli
 WORKDIR /usr/src/app
 
 COPY . .
@@ -42,7 +42,7 @@ RUN cd src/create-torrent && yarn run build && yarn remove $(cat package.json | 
 RUN cd src/create-torrent && sed -i 's/flat()/flat(64)/' node_modules/create-torrent/get-files.js
 
 # Install extra packages
-RUN pacman --noconfirm -Sy neovim ranger
+RUN pacman --noconfirm -Sy neovim
 
 # Stage: run
 WORKDIR /usr/src/app/src/dashboard

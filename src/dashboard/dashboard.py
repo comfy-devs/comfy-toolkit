@@ -1,4 +1,4 @@
-from os import system
+from os import system, path
 from util.general import setInterval, colorize
 from ui.main import printMainUI
 from ui.jobs import printJobsUI
@@ -36,7 +36,12 @@ class Dashboard:
                 continue
             firstJob = jobCollection.jobs[0]
 
-            if "transcoding" not in currentJobTypes and firstJob.jobType == "transcoding":
+            if "download" not in currentJobTypes and firstJob.jobType == "download":
+                jobCollection.jobs.remove(firstJob)
+                jobCollection.currentJob = firstJob
+                jobCollection.currentJob.start()
+                currentJobTypes.append("download")
+            elif "transcoding" not in currentJobTypes and firstJob.jobType == "transcoding":
                 jobCollection.jobs.remove(firstJob)
                 jobCollection.currentJob = firstJob
                 jobCollection.currentJob.start()
@@ -54,6 +59,11 @@ class Dashboard:
 
     def run(self):
         setInterval(1, self.asyncRun)
+        if path.exists(f"/usr/src/nyanime/ssh/id_rsa"):
+            system("eval $(ssh-agent)")
+            system("ssh-add /usr/src/nyanime/ssh/id_rsa")
+        
+        system("mkdir -p /usr/src/nyananime/torrents")
         system("mkdir -p /usr/src/nyananime/src-episodes")
         system("mkdir -p /usr/src/nyananime/dest-episodes")
 

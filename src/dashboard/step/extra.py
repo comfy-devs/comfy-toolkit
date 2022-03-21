@@ -75,25 +75,33 @@ def stepExtraEpisodes(anilistID, start, length, mediaMAL=None):
     print(result)
     input("Press enter...")
 
-def stepExtra(anilistID, malID):
+def stepExtra(anilistID, malID, partial = False):
     media = fetchAnilist(anilistID)
     mediaMAL = fetchMAL(malID, media["episodes"])
 
-    selection = input("> Download poster? (y/n) [y]: ")
+    if partial == False:
+        selection = input("> Download poster? (y/n) [y]: ")
+        selection = "y" if selection == "" else selection
+        if selection == "y":
+            posterUrl = input(f"> Poster URL? [{colorize('gray', media['coverImage']['extraLarge'])}]: ")
+            posterUrl = media["coverImage"]["extraLarge"] if posterUrl == "" else posterUrl
+            downloadPoster(anilistID, posterUrl)
+        
+        selection = input("> Generate SQL query for anime? (y/n) [y]: ")
+        selection = "y" if selection == "" else selection
+        if selection == "y":
+            stepExtraAnime(anilistID, media, mediaMAL)
+    
+    selection = input("> Generate SQL query for episodes? (y/n) [y]: ")
     selection = "y" if selection == "" else selection
     if selection == "y":
-        posterUrl = input(f"> Poster URL? [{colorize('gray', media['coverImage']['extraLarge'])}]: ")
-        posterUrl = media["coverImage"]["extraLarge"] if posterUrl == "" else posterUrl
-        downloadPoster(anilistID, posterUrl)
-
-    selection = input("> Generate SQL query for anime? (y/n) [y]: ")
-    selection = "y" if selection == "" else selection
-    if selection == "y":
-        stepExtraAnime(anilistID, media, mediaMAL)
-
-    selection = input("> Generate SQL query for an entire series? (y/n) [y]: ")
-    selection = "y" if selection == "" else selection
-    if selection == "y":
-        animeEpisodes = input(f"> Anime episode count? [{colorize('gray', media['episodes'])}]: ")
-        animeEpisodes = media["episodes"] if animeEpisodes == "" else int(animeEpisodes)
-        stepExtraEpisodes(anilistID, 0, animeEpisodes, mediaMAL)
+        if partial:
+            animeStart = int(input(f"> First episode index? [0]: "))
+            animeStart = 0 if animeStart == "" else int(animeStart)
+            animeEpisodes = input(f"> Episode count? [1]: ")
+            animeEpisodes = 1 if animeEpisodes == "" else int(animeEpisodes)
+            stepExtraEpisodes(anilistID, animeStart, animeEpisodes, mediaMAL)
+        else:
+            animeEpisodes = input(f"> Episode count? [{colorize('gray', media['episodes'])}]: ")
+            animeEpisodes = media["episodes"] if animeEpisodes == "" else int(animeEpisodes)
+            stepExtraEpisodes(anilistID, 0, animeEpisodes, mediaMAL)

@@ -60,10 +60,10 @@ def printMainUI(dashboard):
             selection = "n" if selection == "" else selection
             if selection == "y":
                 opt_magnet = ""
-                if not path.exists(f"/usr/src/nyananime/torrents/{opt_id}/series.txt"):
+                if not path.exists(f"/usr/src/nyananime/torrents/{opt_id}/link.conf"):
                     opt_magnet = input("> Magnet link?: ")
                 else:
-                    opt_magnet = subprocess.getoutput(f'cat "/usr/src/nyananime/torrents/{opt_id}/series.txt"')
+                    opt_magnet = subprocess.getoutput(f'cat "/usr/src/nyananime/torrents/{opt_id}/link.conf"')
                 jobs.append(DownloadJob(opt_id, opt_magnet))
             else:
                 stepSelect(dashboard, opt_id)
@@ -94,13 +94,19 @@ def printMainUI(dashboard):
             selection = "n" if selection == "" else selection
             if selection == "y":
                 opt_magnet = ""
-                if not path.exists(f"/usr/src/nyananime/torrents/{opt_id}/series.txt"):
+                if not path.exists(f"/usr/src/nyananime/torrents/{opt_id}/link.conf"):
                     opt_magnet = input("> Magnet link?: ")
                 else:
-                    opt_magnet = subprocess.getoutput(f'cat "/usr/src/nyananime/torrents/{opt_id}/series.txt"')
+                    opt_magnet = subprocess.getoutput(f'cat "/usr/src/nyananime/torrents/{opt_id}/link.conf"')
                 jobs.append(DownloadJob(opt_id, opt_magnet))
             else:
                 stepSelect(dashboard, opt_id)
+
+            selection = input("> Process extra data now? [n]: ")
+            selection = "n" if selection == "" else selection
+            if selection == "y":
+                opt_mal_id = input("> Anime ID? (ID from myanimelist.net): ")
+                stepExtra(opt_id, opt_mal_id, True)
             
             jobs.extend(stepTranscode(dashboard, opt_id, opt_i))
             jobs.append(UploadJob(opt_id))
@@ -110,10 +116,10 @@ def printMainUI(dashboard):
             print(f'{colorize("gray", f"Nyan Anime Toolkit - Only download")}')
             opt_id = input("> Anime ID? (ID from anilist.co): ")
             opt_magnet = ""
-            if not path.exists(f"/usr/src/nyananime/torrents/{opt_id}/series.txt"):
+            if not path.exists(f"/usr/src/nyananime/torrents/{opt_id}/link.conf"):
                 opt_magnet = input("> Magnet link?: ")
             else:
-                opt_magnet = subprocess.getoutput(f'cat "/usr/src/nyananime/torrents/{opt_id}/series.txt"')
+                opt_magnet = subprocess.getoutput(f'cat "/usr/src/nyananime/torrents/{opt_id}/link.conf"')
                 
             dashboard.addJobCollection(JobCollection(f"Only download job for '{opt_id}'", [DownloadJob(opt_id, opt_magnet)]))
         if selection == "4":
@@ -141,8 +147,8 @@ def printMainUI(dashboard):
             dashboard.addJobCollection(JobCollection(f"Only upload job for '{opt_id}'", [UploadJob(opt_id)]))
     elif selection == "3":
         system("clear")
-        print(f'{colorize("gray", f"Nyan Anime Toolkit - Other")}')
-        print("1) Add complete series data")
+        print(f'{colorize("gray", f"Nyan Anime Toolkit - RSS")}')
+        print("1) Add a feed")
         print("2) Add new episodes data")
         print("3) Back")
         selection = input("> Selection? [3]: ")
@@ -158,8 +164,20 @@ def printMainUI(dashboard):
             system("clear")
             print(f'{colorize("gray", f"Nyan Anime Toolkit - Add new episodes data")}')
             opt_id = input("> Anime ID? (ID from anilist.co): ")
-            start = int(input(f"> First episode index?: "))
-            length = int(input(f"> Number of episodes?: "))
-            stepExtraEpisodes(opt_id, start, length)
+            opt_mal_id = input("> Anime ID? (ID from myanimelist.net): ")
+            stepExtra(opt_id, opt_mal_id, True)
     elif selection == "4":
+        system("clear")
+        print(f'{colorize("gray", f"Nyan Anime Toolkit - RSS")}')
+        print("1) List feeds")
+        print("2) Add a feed")
+        print("3) Back")
+        selection = input("> Selection? [3]: ")
+        selection = "3" if selection == "" else selection
+
+        if selection == "1":
+            system("clear")
+        if selection == "2":
+            system("clear")
+    elif selection == "5":
         exit(0)

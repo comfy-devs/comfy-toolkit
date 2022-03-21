@@ -13,7 +13,7 @@ Shutting down is with <code>docker-compose down</code>.
 > 1) Edit volumes in <code>docker-compose.yml</code>, to mount whatever folders you want  
 > 2) (Optional) Edit <code>.env-dummy</code> and save it as <code>.env</code> to be able to upload  
 > 3) (Optional) Create an SSH key, ssh-copy-id to the host and save it as <code>ssh/id_rsa</code> to wherever you mounted the folder (so <code>/mnt/data/nyananime/ssh/id_rsa</code> in my case)  
-4) (Optional) If you put a password on the key, you need to do <code>eval $(ssh-agent)</code> and <code>ssh-add ../../../nyananime/ssh/id_rsa</code>  
+> 4) (Optional) Edit feeds.conf and filters.conf and save it into the <code>rss</code> folder to use RSS
 
 ## Scripts included
 | Script                        | Description                                               |

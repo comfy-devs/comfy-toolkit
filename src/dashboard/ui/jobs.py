@@ -11,7 +11,6 @@ def printJob(job, status, color="reset"):
     jobSpeed = "{:<8}".format(job.jobSpeed[:8])
     print(f'|- {colorize(color, f"{jobType} | {jobName} | {jobStatus} | {jobProgress} | {jobSpeed}")}')
 
-# TODO: add ability to collapse jobs under the same id
 def printJobsUI(dashboard):
     n = functools.reduce(lambda acc, curr: acc + len(curr.jobs) + (1 if curr.currentJob != None else 0), dashboard.jobCollections, 0)
     if dashboard.jobsUIShowCompleted:

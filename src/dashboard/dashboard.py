@@ -92,7 +92,7 @@ class Dashboard:
                         job.jobOnComplete = lambda: self.changeJobStatus(animeID, episodeIndex, "upload")
                         collection.jobs.append(job)
                     if jobStatus == "download" or jobStatus == "transcode" or jobStatus == "upload":
-                        job = UploadJob(animeID)
+                        job = UploadJob(animeID, episodeIndex)
                         job.jobOnComplete = lambda: self.changeJobStatus(animeID, episodeIndex, "finished")
                         collection.jobs.append(job)
                     self.addJobCollection(collection)
@@ -113,7 +113,7 @@ class Dashboard:
                 rssLines = f.readlines()
                 i = 0
                 for j in range(len(rssLines)):
-                    if i + j >= len(rssLines) or rssLines[i].startswith("#"):
+                    if i + j >= len(rssLines) or rssLines[i + j].startswith("#"):
                         continue
                     self.rssFilters.append({ "id": rssLines[i + j].strip()[1:-1], "regex": rssLines[i + j + 1].strip() })
                     i += 1

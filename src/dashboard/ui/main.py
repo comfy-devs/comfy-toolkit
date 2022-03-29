@@ -82,7 +82,7 @@ def printMainUI(dashboard):
             
             jobs.extend(stepTranscode(dashboard, opt_id))
             jobs.append(TorrentJob(opt_id))
-            jobs.append(UploadJob(opt_id))
+            jobs.append(UploadJob(opt_id, None))
             dashboard.addJobCollection(JobCollection(f"Complete series job for '{opt_id}'", jobs))
         elif selection == "2":
             system("clear")
@@ -110,7 +110,7 @@ def printMainUI(dashboard):
                 stepExtra(opt_id, opt_mal_id, True)
             
             jobs.extend(stepTranscode(dashboard, opt_id, opt_i))
-            jobs.append(UploadJob(opt_id))
+            jobs.append(UploadJob(opt_id, opt_i))
             dashboard.addJobCollection(JobCollection(f"New episodes job for '{opt_id}'", jobs))
         elif selection == "3":
             system("clear")
@@ -145,7 +145,7 @@ def printMainUI(dashboard):
             system("clear")
             print(f'{colorize("gray", f"Nyan Anime Toolkit - Only upload")}')
             opt_id = input("> Anime ID? (ID from anilist.co): ")
-            dashboard.addJobCollection(JobCollection(f"Only upload job for '{opt_id}'", [UploadJob(opt_id)]))
+            dashboard.addJobCollection(JobCollection(f"Only upload job for '{opt_id}'", [UploadJob(opt_id, None)]))
     elif selection == "3":
         system("clear")
         print(f'{colorize("gray", f"Nyan Anime Toolkit - Other")}')

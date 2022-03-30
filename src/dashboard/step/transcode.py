@@ -35,7 +35,7 @@ def stepTranscode(dashboard, opt_id, i=0):
     jobs = []
     entries = subprocess.getoutput(f'find /usr/src/nyananime/src-episodes/{opt_id}/ -type f -name "*.mkv" -printf "%P\\n" | sort').split("\n")
     for entry in entries:
-        jobs.append(TranscodingJob(opt_id, i, entry, opt_codec, [opt_min_bitrate, opt_bitrate, opt_max_bitrate]))
+        jobs.append(TranscodingJob(opt_id, i, f"/usr/src/nyananime/src-episodes/{opt_id}/{entry}", opt_codec, [opt_min_bitrate, opt_bitrate, opt_max_bitrate]))
         i += 1
     
     return jobs

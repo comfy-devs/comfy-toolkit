@@ -5,27 +5,28 @@ from util.general import colorize
 from job.job import Job
 
 class TranscodingJob(Job):
-    def __init__(self, jobAnimeID, jobEpisodeIndex, jobSrcFile, jobCodec, jobVideoOptions):
+    def __init__(self, jobAnimeID, jobEpisodeIndex, jobSrcPath, jobCodec, jobVideoOptions):
         Job.__init__(self, "transcoding")
         self.jobAnimeID = jobAnimeID
         self.jobEpisodeIndex = jobEpisodeIndex
-        self.jobSrcFile = jobSrcFile
+        self.jobSrcPath = jobSrcPath
         self.jobSrcFrames = None
         self.jobCodec = jobCodec
         self.jobVideoOptions = jobVideoOptions
-        self.jobName = f"Transcoding job for '{self.jobSrcFile}'"
+        self.jobPath = f"/{self.jobEpisodeIndex}" if self.jobEpisodeIndex != None else ""
+        self.jobName = f"Transcoding job for '{self.jobAnimeID}{self.jobPath}'"
 
     def runProgress(self):
         if self.jobSubprocess == None:
             return
         
         if self.jobSrcFrames == None:
-            self.jobSrcFrames = subprocess.getoutput(f'ffprobe -v error -select_streams v -show_entries stream=index:stream_tags=NUMBER_OF_FRAMES -of csv=p=0 "/usr/src/nyananime/src-episodes/{self.jobAnimeID}/{self.jobSrcFile}"')
+            self.jobSrcFrames = subprocess.getoutput(f'ffprobe -v error -select_streams v -show_entries stream=index:stream_tags=NUMBER_OF_FRAMES -of csv=p=0 "{self.jobSrcPath}"')
             if "," in self.jobSrcFrames:
                 self.jobSrcFrames = int(self.jobSrcFrames[(self.jobSrcFrames.index(",") + 1):])
             else:
                 # This is really slow btw, probably should replace it with duration based progress calculation, but Erai-Raws releases should work with the fast NUMBER_OF_FRAMES method
-                self.jobSrcFrames = subprocess.getoutput(f'ffprobe -v error -select_streams v -count_packets -show_entries stream=nb_read_packets -of csv=p=0 "/usr/src/nyananime/src-episodes/{self.jobAnimeID}/{self.jobSrcFile}"')
+                self.jobSrcFrames = subprocess.getoutput(f'ffprobe -v error -select_streams v -count_packets -show_entries stream=nb_read_packets -of csv=p=0 "{self.jobSrcPath}"')
                 try:
                     self.jobSrcFrames = int(self.jobSrcFrames)
                 except:
@@ -51,17 +52,17 @@ class TranscodingJob(Job):
 
         system(f'mkdir -p "/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}"')
         if self.jobCodec == "x264" and not path.exists(f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/episode_x264.mp4") and not path.exists(f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/hls/x264/master.m3u8"):
-            args = [f"../scripts/ffmpeg-x264-medium.sh", f"/usr/src/nyananime/src-episodes/{self.jobAnimeID}/{self.jobSrcFile}", f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}"]
+            args = [f"../scripts/ffmpeg-x264-medium.sh", self.jobSrcPath, f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}"]
             self.jobSubprocess = subprocess.Popen(args, stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines='\r')
         elif self.jobCodec == "vp9" and not path.exists(f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/episode_vp9.webm") and not path.exists(f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/hls/vp9/master.m3u8"):
-            args = [f"../scripts/ffmpeg-vp9.sh", f"/usr/src/nyananime/src-episodes/{self.jobAnimeID}/{self.jobSrcFile}", f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}"]
+            args = [f"../scripts/ffmpeg-vp9.sh", self.jobSrcPath, f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}"]
             args.extend(self.jobVideoOptions)
             self.jobSubprocess = subprocess.Popen(args, stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines='\r')
-        self.startSection(f"Transcoding '{self.jobSrcFile}' ({self.jobCodec})...")
+        self.startSection(f"Transcoding '{self.jobAnimeID}{self.jobPath}' ({self.jobCodec})...")
         self.runProgress()
         self.endSection()
         
-        audioStreams = subprocess.getoutput(f'ffprobe -v error -select_streams a -show_entries stream=index -of csv=p=0 "/usr/src/nyananime/src-episodes/{self.jobAnimeID}/{self.jobSrcFile}" | wc -w')
+        audioStreams = subprocess.getoutput(f'ffprobe -v error -select_streams a -show_entries stream=index -of csv=p=0 "{self.jobSrcPath}" | wc -w')
         if self.jobCodec == "x264" and not path.exists(f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/hls/x264/master.m3u8"):
             system(f'mkdir -p "/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/hls/x264"')
             script = "../scripts/ffmpeg-x264-hls.sh" if int(audioStreams) <= 1 else "../scripts/ffmpeg-x264-hls-dub.sh"
@@ -74,17 +75,17 @@ class TranscodingJob(Job):
             args = [script, f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/episode_vp9.webm", f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}"]
             self.jobSubprocess = subprocess.Popen(args, stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines='\r')
             # system(f'rm "/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/episode_vp9.webm"')
-        self.startSection(f"Generating HLS streams for '{self.jobSrcFile}' ({self.jobCodec})...")
+        self.startSection(f"Generating HLS streams for '{self.jobAnimeID}{self.jobPath}' ({self.jobCodec})...")
         self.runProgress()
         self.endSection()
         
         system(f'mkdir -p "/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/subs"')
         system(f'mkdir -p "/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/hls/subs"')
-        subtitleStreams = int(subprocess.getoutput(f'ffprobe -v error -select_streams s -show_entries stream=index -of csv=p=0 "/usr/src/nyananime/src-episodes/{self.jobAnimeID}/{self.jobSrcFile}" | wc -w'))
-        duration = subprocess.getoutput(f'ffprobe -i "/usr/src/nyananime/src-episodes/{self.jobAnimeID}/{self.jobSrcFile}" -v quiet -show_entries format=duration -hide_banner -of default=noprint_wrappers=1:nokey=1')
+        subtitleStreams = int(subprocess.getoutput(f'ffprobe -v error -select_streams s -show_entries stream=index -of csv=p=0 "{self.jobSrcPath}" | wc -w'))
+        duration = subprocess.getoutput(f'ffprobe -i "{self.jobSrcPath}" -v quiet -show_entries format=duration -hide_banner -of default=noprint_wrappers=1:nokey=1')
         processedSubtitles = []
         for i in range(subtitleStreams):
-            subtitleStreamLanguage = subprocess.getoutput(f'ffprobe -v error -select_streams s:{i} -show_entries stream=index:stream_tags=language -of csv=p=0 "/usr/src/nyananime/src-episodes/{self.jobAnimeID}/{self.jobSrcFile}"')
+            subtitleStreamLanguage = subprocess.getoutput(f'ffprobe -v error -select_streams s:{i} -show_entries stream=index:stream_tags=language -of csv=p=0 "{self.jobSrcPath}"')
             if "," in subtitleStreamLanguage:
                 subtitleStreamLanguage = subtitleStreamLanguage[(subtitleStreamLanguage.index(",") + 1):]
             else:
@@ -94,8 +95,8 @@ class TranscodingJob(Job):
             processedSubtitles.append(subtitleStreamLanguage)
 
             if not path.exists(f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/subs/{subtitleStreamLanguage}.vtt"):
-                self.jobSubprocess = subprocess.Popen(["../scripts/ffmpeg-subs.sh", f"/usr/src/nyananime/src-episodes/{self.jobAnimeID}/{self.jobSrcFile}", f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/subs/{subtitleStreamLanguage}.vtt", f"{i}"], stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines='\r')
-                self.startSection(f"Extracting subtitles ({subtitleStreamLanguage}, {i}/{subtitleStreams}) from '{self.jobSrcFile}'...")
+                self.jobSubprocess = subprocess.Popen(["../scripts/ffmpeg-subs.sh", self.jobSrcPath, f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/subs/{subtitleStreamLanguage}.vtt", f"{i}"], stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines='\r')
+                self.startSection(f"Extracting subtitles ({subtitleStreamLanguage}, {i}/{subtitleStreams}) from '{self.jobAnimeID}{self.jobPath}'...")
                 self.runProgress()
                 self.endSection()
                 self.jobSubprocess = subprocess.Popen(["../scripts/subs-clean.sh", f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/subs/{subtitleStreamLanguage}.vtt"], stdin=DEVNULL, stdout=DEVNULL, stderr=DEVNULL)
@@ -111,7 +112,7 @@ class TranscodingJob(Job):
         
         
         masterLines = []
-        self.startSection(f"Editing HLS playlists of '{self.jobSrcFile}'...")
+        self.startSection(f"Editing HLS playlists of '{self.jobAnimeID}{self.jobPath}'...")
         with open(f'/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/hls/{"x264" if self.jobCodec == "x264" else "vp9"}/master.m3u8') as f:
             masterLines = f.readlines()
 
@@ -121,7 +122,7 @@ class TranscodingJob(Job):
 
             processedSubtitles = []
             for i in range(int(subtitleStreams)):
-                subtitleStreamLanguage = subprocess.getoutput(f'ffprobe -v error -select_streams s:{i} -show_entries stream=index:stream_tags=language -of csv=p=0 "/usr/src/nyananime/src-episodes/{self.jobAnimeID}/{self.jobSrcFile}"')
+                subtitleStreamLanguage = subprocess.getoutput(f'ffprobe -v error -select_streams s:{i} -show_entries stream=index:stream_tags=language -of csv=p=0 "{self.jobSrcPath}"')
                 if "," in subtitleStreamLanguage:
                     subtitleStreamLanguage = subtitleStreamLanguage[(subtitleStreamLanguage.index(",") + 1):]
                 else:
@@ -138,18 +139,18 @@ class TranscodingJob(Job):
             f.writelines(masterLines)
         self.endSection()
 
-        self.startSection(f"Generating thumbnails for '{self.jobSrcFile}'...")
+        self.startSection(f"Generating thumbnails for '{self.jobAnimeID}{self.jobPath}'...")
         if not path.exists(f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/thumbnail.webp"):
-            self.jobSubprocess = subprocess.Popen(["../scripts/ffmpeg-thumbnail.sh", f"/usr/src/nyananime/src-episodes/{self.jobAnimeID}/{self.jobSrcFile}", f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}", "webp"], stdin=DEVNULL, stdout=DEVNULL, stderr=DEVNULL)
+            self.jobSubprocess = subprocess.Popen(["../scripts/ffmpeg-thumbnail.sh", self.jobSrcPath, f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}", "webp"], stdin=DEVNULL, stdout=DEVNULL, stderr=DEVNULL)
             self.jobSubprocess.wait()
         if not path.exists(f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/thumbnail.jpg"):
-            self.jobSubprocess = subprocess.Popen(["../scripts/ffmpeg-thumbnail.sh", f"/usr/src/nyananime/src-episodes/{self.jobAnimeID}/{self.jobSrcFile}", f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}", "jpg"], stdin=DEVNULL, stdout=DEVNULL, stderr=DEVNULL)
+            self.jobSubprocess = subprocess.Popen(["../scripts/ffmpeg-thumbnail.sh", self.jobSrcPath, f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}", "jpg"], stdin=DEVNULL, stdout=DEVNULL, stderr=DEVNULL)
             self.jobSubprocess.wait()
         self.endSection()
 
-        self.startSection(f"Extracting chapters from '{self.jobSrcFile}'...")
+        self.startSection(f"Extracting chapters from '{self.jobAnimeID}{self.jobPath}'...")
         if not path.exists(f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/chapters.json"):
-            self.jobSubprocess = subprocess.Popen(["../scripts/ffmpeg-chapters.sh", f"/usr/src/nyananime/src-episodes/{self.jobAnimeID}/{self.jobSrcFile}", f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}"], stdin=DEVNULL, stdout=DEVNULL, stderr=DEVNULL)
+            self.jobSubprocess = subprocess.Popen(["../scripts/ffmpeg-chapters.sh", self.jobSrcPath, f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}"], stdin=DEVNULL, stdout=DEVNULL, stderr=DEVNULL)
             self.jobSubprocess.wait()
         self.endSection()
 
@@ -160,5 +161,5 @@ class TranscodingJob(Job):
         # else:
         #     self.jobLogs.append(f'Stats already generated. Skipping...')
         
-        self.jobName = f"Transcoding job for '{self.jobSrcFile}'"
+        self.jobName = f"Transcoding job for '{self.jobAnimeID}{self.jobPath}'"
         DEVNULL.close()

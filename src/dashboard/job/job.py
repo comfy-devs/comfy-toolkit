@@ -8,6 +8,7 @@ class Job(threading.Thread):
         self.jobProgress = 0
         self.jobSpeed = "--"
         self.jobSubprocess = None
+        self.jobOnComplete = None
 
     def startSection(self, name):
         self.jobName = name

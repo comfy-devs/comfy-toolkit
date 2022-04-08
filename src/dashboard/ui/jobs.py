@@ -20,6 +20,9 @@ def printJobsUI(dashboard):
     print(colorize("gray", f'Nyan Anime Toolkit - Jobs ({n})'))
 
     for jobCollection in dashboard.jobCollections:
+        if not dashboard.jobsUIShowCompleted and len(jobCollection.jobs) == 0:
+            continue
+        
         print(f"| {colorize('bright_blue' if jobCollection.currentJob != None else ('bright_green' if len(jobCollection.jobs) == 0 else 'white'), jobCollection.name)}")
         if dashboard.jobsUICollapse:
             continue

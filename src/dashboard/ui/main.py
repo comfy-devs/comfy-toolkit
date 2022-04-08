@@ -8,7 +8,7 @@ from job.download import DownloadJob
 from job.torrent import TorrentJob
 from job.upload import UploadJob
 from job.collection import JobCollection
-from util.api import fetchAnilist
+from util.api import fetchAnilist, fetchMAL
 
 def printJobsUISelector(dashboard):
     dashboard.jobsUIEnabled = True
@@ -151,8 +151,9 @@ def printMainUI(dashboard):
         print(f'{colorize("gray", f"Nyan Anime Toolkit - Other")}')
         print("1) Add complete series data")
         print("2) Add new episodes data")
-        print("3) Load previous jobs")
-        print("4) Back")
+        print("3) Get series timestamp")
+        print("4) Load previous jobs")
+        print("5) Back")
         selection = input("> Selection? [4]: ")
         selection = "4" if selection == "" else selection
 
@@ -169,6 +170,15 @@ def printMainUI(dashboard):
             opt_mal_id = input("> Anime ID? (ID from myanimelist.net): ")
             stepExtra(opt_id, opt_mal_id, True)
         elif selection == "3":
+            system("clear")
+            print(f'{colorize("gray", f"Nyan Anime Toolkit - Get series timestamp")}')
+            opt_id = input("> Anime ID? (ID from anilist.co): ")
+            opt_mal_id = input("> Anime ID? (ID from myanimelist.net): ")
+            media = fetchAnilist(opt_id)
+            mediaMAL = fetchMAL(opt_mal_id, media["episodes"])
+            print(f"UPDATE animes SET timestamp = {mediaMAL['timestamp']} WHERE id = '{opt_id}';")
+            input("Press enter...")
+        elif selection == "4":
             dashboard.loadJobs()
     elif selection == "4":
         system("clear")

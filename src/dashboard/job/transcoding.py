@@ -154,12 +154,15 @@ class TranscodingJob(Job):
             self.jobSubprocess.wait()
         self.endSection()
 
-        # if not path.exists(f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/stats.json"):
-        #     self.jobLogs.append(f'Generating stats...')
-        #     self.jobSubprocess = subprocess.Popen(["../scripts/ffmpeg-stats.sh", f"/usr/src/nyananime/src-episodes/{self.jobAnimeID}/{self.jobSrcFile}", f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}"], stdin=DEVNULL, stdout=DEVNULL, stderr=DEVNULL)
-        #     self.jobSubprocess.wait()
-        # else:
-        #     self.jobLogs.append(f'Stats already generated. Skipping...')
+        self.startSection(f"Extracting stats from '{self.jobAnimeID}{self.jobPath}'...")
+        if not path.exists(f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/stats.json"):
+            if self.jobCodec == "x264":
+                self.jobSubprocess = subprocess.Popen(["../scripts/ffmpeg-x264-stats.sh", f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/episode_x264.mp4", f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}"], stdin=DEVNULL, stdout=DEVNULL, stderr=DEVNULL)
+            elif self.jobCodec == "vp9":
+                self.jobSubprocess = subprocess.Popen(["../scripts/ffmpeg-vp9-stats.sh", f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/episode_vp9.webm", f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}"], stdin=DEVNULL, stdout=DEVNULL, stderr=DEVNULL)
+            
+            self.jobSubprocess.wait()
+        self.endSection()
         
         self.jobName = f"Transcoding job for '{self.jobAnimeID}{self.jobPath}'"
         DEVNULL.close()

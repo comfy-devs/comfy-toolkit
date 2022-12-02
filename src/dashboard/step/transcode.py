@@ -8,21 +8,19 @@ def stepTranscode(dashboard, opt_id, i=0):
     opt_codec = input("> Encoding codec? (x264/vp9) [x264]: ")
     opt_codec = "x264" if opt_codec == "" else opt_codec
 
-    dest_script = ""
-    dest_file = ""
     opt_min_bitrate = ""
     opt_bitrate = ""
     opt_max_bitrate = ""
     if opt_codec == "vp9":
         entries = subprocess.getoutput(f'find /usr/src/nyananime/dest-episodes/{opt_id}/ -type f -name "*.mp4" -printf "%P\\n" | sort').split("\n")
-        if len(entries) > 0:
+        if len(entries) > 0 and entries[0] != "":
             print("Listing bitrates of previous transcodes...")
             for entry in entries:
                 v_bitrate = subprocess.getoutput(f'ffprobe -i "{entry}" -v quiet -select_streams v:0 -show_entries stream=bit_rate -hide_banner -of default=noprint_wrappers=1:nokey=1')
                 try:
                     v_bitrate = round(float(v_bitrate) / 1000000, 2)
                     print(f'Bitrate for episode \'{colorize("gray", entry)}\': {v_bitrate} Mb/s')
-                except e:
+                except Exception as e:
                     print(f'Bitrate for episode \'{colorize("gray", entry)}\': ?? Mb/s')
 
         opt_min_bitrate = input("> Minimal bitrate? (recommended: 550k) [550k]: ")

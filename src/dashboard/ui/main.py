@@ -88,7 +88,7 @@ def printMainUI(dashboard):
             system("clear")
             print(f'{colorize("gray", f"Nyan Anime Toolkit - New episodes")}')
             opt_id = input("> Anime ID? (ID from anilist.co): ")
-            opt_i = input("> First episode index?: ")
+            opt_i = int(input("> First episode index?: "))
             jobs = []
 
             selection = input("> Download torrent? [n]: ")
@@ -133,7 +133,7 @@ def printMainUI(dashboard):
             system("clear")
             print(f'{colorize("gray", f"Nyan Anime Toolkit - Only transcode")}')
             opt_id = input("> Anime ID? (ID from anilist.co): ")
-            opt_i = input("> First episode index?: ")
+            opt_i = int(input("> First episode index?: "))
             stepSelect(dashboard, opt_id)
             dashboard.addJobCollection(JobCollection(f"Only transcode job for '{opt_id}'", stepTranscode(dashboard, opt_id, opt_i)))
         elif selection == "6":

@@ -10,10 +10,9 @@ Other: <a href="https://www.docker.com/">Docker<a>
 Building is done with <code>docker-compose build</code>.  
 Running is done with <code>docker-compose run nyananime-toolkit /bin/bash</code>.  
 Shutting down is with <code>docker-compose down</code>.
-> 1) Edit volumes in <code>docker-compose.yml</code>, to mount whatever folders you want  
-> 2) (Optional) Edit <code>.env-dummy</code> and save it as <code>.env</code> to be able to upload  
-> 3) (Optional) Create an SSH key, ssh-copy-id to the host and save it as <code>ssh/id_rsa</code> to wherever you mounted the folder (so <code>/mnt/data/nyananime/ssh/id_rsa</code> in my case)  
-> 4) (Optional) Edit feeds.conf and filters.conf and save it into the <code>rss</code> folder to use RSS
+> 1) Edit <code>.env-dummy</code> and save it as <code>.env</code>  
+> 2) (Optional) Create an SSH key, ssh-copy-id to the host and save it as <code>ssh/id_rsa</code> to wherever you mounted the core folder  
+> 3) (Optional) Edit feeds.conf and filters.conf and save it as <code>rss/feeds.conf</code> and <code>rss/filters.conf</code> under your core folder to use RSS
 
 ## Scripts included
 | Script                        | Description                                               |

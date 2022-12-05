@@ -8,8 +8,8 @@ def printJob(job, status, color="reset"):
     jobStatus = "{:<12}".format(status[:12])
     jobProgress = str(job.jobProgress) + "%"
     jobProgress = "{:<8}".format(jobProgress[:8])
-    jobSpeed = "{:<8}".format(job.jobSpeed[:8])
-    print(f'|- {colorize(color, f"{jobType} | {jobName} | {jobStatus} | {jobProgress} | {jobSpeed}")}')
+    jobDetails = "{:<48}".format(job.jobDetails[:48])
+    print(f'|- {colorize(color, f"{jobType} | {jobName} | {jobStatus} | {jobProgress} | {jobDetails}")}')
 
 def printJobsUI(dashboard):
     n = functools.reduce(lambda acc, curr: acc + len(curr.jobs) + (1 if curr.currentJob != None else 0), dashboard.jobCollections, 0)

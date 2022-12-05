@@ -1,5 +1,4 @@
-import subprocess, os
-from os import system, path
+from os import system
 from util.general import colorize
 from util.api import fetchAnilist, fetchMAL
 

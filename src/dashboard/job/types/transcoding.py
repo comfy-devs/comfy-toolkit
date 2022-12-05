@@ -1,7 +1,6 @@
 import subprocess, os
 from iso639 import languages
 from os import system, path
-from util.general import colorize
 from job.job import Job
 
 class TranscodingJob(Job):
@@ -10,7 +9,7 @@ class TranscodingJob(Job):
         self.jobAnimeID = jobAnimeID
         self.jobEpisodeIndex = jobEpisodeIndex
         self.jobSrcPath = jobSrcPath
-        self.jobSrcFrames = None
+        self.jobSrcFrames = 0
         self.jobCodec = jobCodec
         self.jobVideoOptions = jobVideoOptions
         self.jobPath = f"/{self.jobEpisodeIndex}" if self.jobEpisodeIndex != None else ""
@@ -20,26 +19,34 @@ class TranscodingJob(Job):
         if self.jobSubprocess == None:
             return
         
-        if self.jobSrcFrames == None:
-            self.jobSrcFrames = subprocess.getoutput(f'ffprobe -v error -select_streams v -show_entries stream=index:stream_tags=NUMBER_OF_FRAMES -of csv=p=0 "{self.jobSrcPath}"')
-            if "," in self.jobSrcFrames:
-                self.jobSrcFrames = int(self.jobSrcFrames[(self.jobSrcFrames.index(",") + 1):])
+        if self.jobSrcFrames == 0:
+            frames = subprocess.getoutput(f'ffprobe -v error -select_streams v -show_entries stream=index:stream_tags=NUMBER_OF_FRAMES -of csv=p=0 "{self.jobSrcPath}"')
+            if "," in frames:
+                self.jobSrcFrames = int(frames[(frames.index(",") + 1):])
             else:
                 # This is really slow btw, probably should replace it with duration based progress calculation, but Erai-Raws releases should work with the fast NUMBER_OF_FRAMES method
-                self.jobSrcFrames = subprocess.getoutput(f'ffprobe -v error -select_streams v -count_packets -show_entries stream=nb_read_packets -of csv=p=0 "{self.jobSrcPath}"')
+                frames = subprocess.getoutput(f'ffprobe -v error -select_streams v -count_packets -show_entries stream=nb_read_packets -of csv=p=0 "{self.jobSrcPath}"')
                 try:
-                    self.jobSrcFrames = int(self.jobSrcFrames)
+                    self.jobSrcFrames = int(frames)
                 except:
                     self.jobSrcFrames = 1
 
-        while True:
-            line = self.jobSubprocess.stderr.readline()
+        while self.jobSubprocess.stderr != None:
+            line = str(self.jobSubprocess.stderr.readline())
             if not line: break
             try:
                 if "frame=" in line:
-                    currentFrame = int(line[len("frame="):line.index("fps=")])
-                    self.jobProgress = round((currentFrame / self.jobSrcFrames) * 100, 2)
-                    self.jobSpeed = line[line.index("speed=")+len("speed="):line.index("\n")].strip()
+                    frame = int(line[len("frame="):line.index("fps=")].strip())
+                    fps = int(line[line.index("fps=")+len("fps="):line.index("q=")].strip())
+                    # q = line[line.index("q=")+len("q="):line.index("size=")-1].strip()
+                    size = line[line.index("size=")+len("size="):line.index("time=")].strip()
+                    bitrate = line[line.index("bitrate=")+len("bitrate="):line.index("speed=")].strip()
+                    speed = round(float(line[line.index("speed=")+len("speed="):line.index("\n")-1].strip()), 2)
+                    self.jobProgress = round((frame / self.jobSrcFrames) * 100, 2)
+                    if bitrate == "N/A":
+                        self.jobDetails = f"{round(fps / 24, 2)}x ({fps} fps, {size})"
+                    else:
+                        self.jobDetails = f"{speed}x ({bitrate}, {size})"
             except:
                 continue
         self.jobSubprocess.wait()
@@ -53,11 +60,11 @@ class TranscodingJob(Job):
         system(f'mkdir -p "/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}"')
         if self.jobCodec == "x264" and not path.exists(f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/episode_x264.mp4") and not path.exists(f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/hls/x264/master.m3u8"):
             args = [f"../scripts/ffmpeg-x264-medium.sh", self.jobSrcPath, f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}"]
-            self.jobSubprocess = subprocess.Popen(args, stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines='\r')
+            self.jobSubprocess = subprocess.Popen(args, stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
         elif self.jobCodec == "vp9" and not path.exists(f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/episode_vp9.webm") and not path.exists(f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/hls/vp9/master.m3u8"):
             args = [f"../scripts/ffmpeg-vp9.sh", self.jobSrcPath, f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}"]
             args.extend(self.jobVideoOptions)
-            self.jobSubprocess = subprocess.Popen(args, stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines='\r')
+            self.jobSubprocess = subprocess.Popen(args, stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
         self.startSection(f"Transcoding '{self.jobAnimeID}{self.jobPath}' ({self.jobCodec})...")
         self.runProgress()
         self.endSection()
@@ -67,13 +74,13 @@ class TranscodingJob(Job):
             system(f'mkdir -p "/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/hls/x264"')
             script = "../scripts/ffmpeg-x264-hls.sh" if int(audioStreams) <= 1 else "../scripts/ffmpeg-x264-hls-dub.sh"
             args = [script, f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/episode_x264.mp4", f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}"]
-            self.jobSubprocess = subprocess.Popen(args, stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines='\r')
+            self.jobSubprocess = subprocess.Popen(args, stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
             # system(f'rm "/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/episode_x264.mp4"')
         elif self.jobCodec == "vp9" and not path.exists(f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/hls/vp9/master.m3u8"):
             system(f'mkdir -p "/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/hls/vp9"')
             script = "../scripts/ffmpeg-vp9-hls.sh" if int(audioStreams) <= 1 else "../scripts/ffmpeg-vp9-hls-dub.sh"
             args = [script, f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/episode_vp9.webm", f"/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}"]
-            self.jobSubprocess = subprocess.Popen(args, stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines='\r')
+            self.jobSubprocess = subprocess.Popen(args, stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
             # system(f'rm "/usr/src/nyananime/dest-episodes/{self.jobAnimeID}/{self.jobEpisodeIndex}/episode_vp9.webm"')
         self.startSection(f"Generating HLS streams for '{self.jobAnimeID}{self.jobPath}' ({self.jobCodec})...")
         self.runProgress()

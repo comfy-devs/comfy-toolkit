@@ -4,9 +4,9 @@ from util.general import colorize
 from step.select import stepSelect
 from step.transcode import stepTranscode
 from step.extra import stepExtra, downloadPoster
-from job.download import DownloadJob
-from job.torrent import TorrentJob
-from job.upload import UploadJob
+from job.types.download import DownloadJob
+from job.types.torrent import TorrentJob
+from job.types.upload import UploadJob
 from job.collection import JobCollection
 from util.api import fetchAnilist
 
@@ -88,7 +88,8 @@ def printMainUI(dashboard):
             system("clear")
             print(f'{colorize("gray", f"Nyan Anime Toolkit - New episodes")}')
             opt_id = input("> Anime ID? (ID from anilist.co): ")
-            opt_i = int(input("> First episode index?: "))
+            opt_i = input("> First episode index? [0]: ")
+            opt_i = 0 if opt_i == "" else int(opt_i)
             jobs = []
 
             selection = input("> Download torrent? [n]: ")
@@ -133,7 +134,8 @@ def printMainUI(dashboard):
             system("clear")
             print(f'{colorize("gray", f"Nyan Anime Toolkit - Only transcode")}')
             opt_id = input("> Anime ID? (ID from anilist.co): ")
-            opt_i = int(input("> First episode index?: "))
+            opt_i = input("> First episode index? [0]: ")
+            opt_i = 0 if opt_i == "" else int(opt_i)
             stepSelect(dashboard, opt_id)
             dashboard.addJobCollection(JobCollection(f"Only transcode job for '{opt_id}'", stepTranscode(dashboard, opt_id, opt_i)))
         elif selection == "6":

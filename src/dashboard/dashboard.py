@@ -3,10 +3,9 @@ from os import system, path
 from util.general import setInterval, colorize
 from ui.main import printMainUI
 from ui.jobs import printJobsUI
-from step.transcode import stepTranscode
-from job.download import DownloadJob
-from job.transcoding_create import TranscodingCreateJob
-from job.upload import UploadJob
+from job.types.download import DownloadJob
+from job.types.transcoding_create import TranscodingCreateJob
+from job.types.upload import UploadJob
 from job.collection import JobCollection
 
 class Dashboard:
@@ -85,15 +84,15 @@ class Dashboard:
                     collection = JobCollection(f"New episodes job for '{animeID}/{episodeIndex}'", [])
                     if jobStatus == "download":
                         job = DownloadJob(animeID, episodeIndex, torrentLink)
-                        job.jobOnComplete = lambda: self.changeJobStatus(animeID, episodeIndex, "transcode")
+                        job.jobOnComplete = lambda: self.changeJobStatus(animeID, episodeIndex, "transcode")  # type: ignore
                         collection.jobs.append(job)
                     if jobStatus == "download" or jobStatus == "transcode":
                         job = TranscodingCreateJob(animeID, episodeIndex, episodeIndex, collection)
-                        job.jobOnComplete = lambda: self.changeJobStatus(animeID, episodeIndex, "upload")
+                        job.jobOnComplete = lambda: self.changeJobStatus(animeID, episodeIndex, "upload")  # type: ignore
                         collection.jobs.append(job)
                     if jobStatus == "download" or jobStatus == "transcode" or jobStatus == "upload":
                         job = UploadJob(animeID, episodeIndex)
-                        job.jobOnComplete = lambda: self.changeJobStatus(animeID, episodeIndex, "finished")
+                        job.jobOnComplete = lambda: self.changeJobStatus(animeID, episodeIndex, "finished")  # type: ignore
                         collection.jobs.append(job)
                     self.addJobCollection(collection)
 

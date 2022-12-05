@@ -1,8 +1,6 @@
 import subprocess
-from os import system
 from util.general import colorize
-from job.transcoding import TranscodingJob
-from job.collection import JobCollection
+from job.types.transcoding import TranscodingJob
 
 def stepTranscode(dashboard, opt_id, i=0):
     opt_codec = input("> Encoding codec? (x264/vp9) [x264]: ")
@@ -12,23 +10,29 @@ def stepTranscode(dashboard, opt_id, i=0):
     opt_bitrate = ""
     opt_max_bitrate = ""
     if opt_codec == "vp9":
-        entries = subprocess.getoutput(f'find /usr/src/nyananime/dest-episodes/{opt_id}/ -type f -name "*.mp4" -printf "%P\\n" | sort').split("\n")
-        if len(entries) > 0 and entries[0] != "":
+        entries = list(filter(None, subprocess.getoutput(f'find /usr/src/nyananime/dest-episodes/{opt_id}/ -type f -name "*.mp4" -printf "%P\\n" | sort').split("\n")))
+        all_bitrate = 0
+        if len(entries) > 0:
             print("Listing bitrates of previous transcodes...")
             for entry in entries:
-                v_bitrate = subprocess.getoutput(f'ffprobe -i "{entry}" -v quiet -select_streams v:0 -show_entries stream=bit_rate -hide_banner -of default=noprint_wrappers=1:nokey=1')
+                v_bitrate = subprocess.getoutput(f'ffprobe -i "/usr/src/nyananime/dest-episodes/{opt_id}/{entry}" -v quiet -select_streams v:0 -show_entries stream=bit_rate -hide_banner -of default=noprint_wrappers=1:nokey=1')
                 try:
-                    v_bitrate = round(float(v_bitrate) / 1000000, 2)
-                    print(f'Bitrate for episode \'{colorize("gray", entry)}\': {v_bitrate} Mb/s')
+                    v_bitrate = round(float(v_bitrate) / 1000)
+                    all_bitrate += v_bitrate
+                    print(f'Bitrate for episode \'{colorize("gray", entry)}\': {v_bitrate} kb/s')
                 except Exception as e:
-                    print(f'Bitrate for episode \'{colorize("gray", entry)}\': ?? Mb/s')
+                    print(f'Bitrate for episode \'{colorize("gray", entry)}\': ?? kb/s')
+            all_bitrate = round(all_bitrate / len(entries))
+            print(f'Average bitrate for {colorize("gray", len(entries))} episodes: {all_bitrate} kb/s')
 
         opt_min_bitrate = input("> Minimal bitrate? (recommended: 550k) [550k]: ")
         opt_min_bitrate = "550k" if opt_min_bitrate == "" else opt_min_bitrate
-        opt_bitrate = input("> Target bitrate? (recommended: (average * 0.55)k) [1600k]: ")
-        opt_bitrate = "1600k" if opt_bitrate == "" else opt_bitrate
-        opt_max_bitrate = input("> Maximal bitrate? (recommended: (average * 0.65)k) [2210k]: ")
-        opt_max_bitrate = "2210k" if opt_max_bitrate == "" else opt_max_bitrate
+        opt_bitrate_r = "1600k" if all_bitrate == 0 else f"{round(all_bitrate * 0.55)}k"
+        opt_bitrate = input(f"> Target bitrate? (recommended: (average * 0.55)k or 1600k) [{opt_bitrate_r}]: ")
+        opt_bitrate = opt_bitrate_r if opt_bitrate == "" else opt_bitrate
+        opt_max_bitrate_r = "2210k" if all_bitrate == 0 else f"{round(all_bitrate * 0.65)}k"
+        opt_max_bitrate = input(f"> Maximal bitrate? (recommended: (average * 0.65)k or 2210k) [{opt_max_bitrate_r}]: ")
+        opt_max_bitrate = opt_max_bitrate_r if opt_max_bitrate == "" else opt_max_bitrate
 
     jobs = []
     entries = subprocess.getoutput(f'find /usr/src/nyananime/src-episodes/{opt_id}/ -type f -name "*.mkv" -printf "%P\\n" | sort').split("\n")

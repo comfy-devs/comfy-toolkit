@@ -1,6 +1,5 @@
 import subprocess, os
 from os import system, path
-from util.general import colorize
 from job.job import Job
 
 class DownloadJob(Job):
@@ -22,13 +21,13 @@ class DownloadJob(Job):
             system(f'ln -sf /usr/src/nyananime/torrents/{self.jobAnimeID}{self.jobPath} /usr/src/nyananime/src-episodes/{self.jobAnimeID}{self.jobPath}')
 
         system(f"echo '{self.jobMagnet}' > /usr/src/nyananime/torrents/{self.jobAnimeID}{self.jobPath}/link.conf")
-        self.jobSubprocess = subprocess.Popen(["transmission-cli", "-v", "-w", f"/usr/src/nyananime/torrents/{self.jobAnimeID}{self.jobPath}", self.jobMagnet], stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines='\r')
-        while True:
-            line = self.jobSubprocess.stdout.readline()
+        self.jobSubprocess = subprocess.Popen(["transmission-cli", "-v", "-w", f"/usr/src/nyananime/torrents/{self.jobAnimeID}{self.jobPath}", self.jobMagnet], stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+        while self.jobSubprocess.stdout != None:
+            line = str(self.jobSubprocess.stdout.readline())
             if not line: break
             if ": " in line:
                 self.jobProgress = float(line[line.index(": ")+2:line.index("%")])
-                self.jobSpeed = line[line.index("(")+1:line.index(")")]
+                self.jobDetails = line[line.index("(")+1:line.index(")")]
             elif "Seeding" in line:
                 self.jobSubprocess.kill()
         self.jobSubprocess.wait()

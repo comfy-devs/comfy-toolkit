@@ -1,8 +1,6 @@
 import subprocess, os
-from os import system, path
-from util.general import colorize
 from job.job import Job
-from job.transcoding import TranscodingJob
+from job.types.transcoding import TranscodingJob
 
 class TranscodingCreateJob(Job):
     def __init__(self, jobAnimeID, jobEpisodeIndex, jobStartIndex, jobCollection):

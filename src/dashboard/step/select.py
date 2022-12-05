@@ -1,6 +1,6 @@
 import subprocess
 from os import system
-from util.general import colorize, getFiles
+from util.general import getFiles
 
 def stepSelect(dashboard, opt_id):
     files = getFiles(opt_id)

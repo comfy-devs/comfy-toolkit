@@ -9,20 +9,20 @@ class TranscodingCreateJob(Job):
         self.jobEpisodeIndex = jobEpisodeIndex
         self.jobStartIndex = jobStartIndex
         self.jobCollection = jobCollection
-        self.jobPath = f"/{self.jobEpisodeIndex}" if self.jobEpisodeIndex != None else ""
-        self.jobName = f"Transcoding create job for '{self.jobAnimeID}{self.jobPath}'"
+        self.jobPath = f"{self.jobAnimeID}/{self.jobEpisodeIndex}" if self.jobEpisodeIndex != None else self.jobAnimeID
+        self.jobName = f"Transcoding create job for '{self.jobPath}'"
 
     def run(self):
         DEVNULL = open(os.devnull, 'wb')
 
         jobs = []
-        entries = subprocess.getoutput(f'find /usr/src/nyananime/src-episodes/{self.jobAnimeID}{self.jobPath}/ -type f -name "*.mkv" -printf "%P\\n" | sort').split("\n")
+        entries = subprocess.getoutput(f'find /usr/src/nyananime/src-episodes/{self.jobPath}/ -type f -name "*.mkv" -printf "%P\\n" | sort').split("\n")
         i = self.jobStartIndex
         for entry in entries:
-            jobs.append(TranscodingJob(self.jobAnimeID, i, f"/usr/src/nyananime/src-episodes/{self.jobAnimeID}{self.jobPath}/{entry}", "x264", []))
+            jobs.append(TranscodingJob(self.jobAnimeID, i, f"/usr/src/nyananime/src-episodes/{self.jobPath}/{entry}", "x264", []))
             i += 1
         jobs.extend(self.jobCollection.jobs)
         self.jobCollection.jobs = jobs
         
-        self.jobName = f"Transcoding create job for '{self.jobAnimeID}{self.jobPath}'"
+        self.jobName = f"Transcoding create job for '{self.jobPath}'"
         DEVNULL.close()

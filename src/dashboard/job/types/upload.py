@@ -6,7 +6,7 @@ class UploadJob(Job):
         Job.__init__(self, "upload")
         self.jobAnimeID = jobAnimeID
         self.jobEpisodeIndex = jobEpisodeIndex
-        self.jobPath = f"{self.jobAnimeID}/{self.jobEpisodeIndex}" if self.jobEpisodeIndex != None else self.jobAnimeID
+        self.jobPath = f"{self.jobPath}" if self.jobEpisodeIndex != None else self.jobAnimeID
         self.jobName = f"Upload job for '{self.jobPath}'"
 
     def run(self):

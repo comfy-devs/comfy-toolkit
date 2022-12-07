@@ -10,7 +10,7 @@ def stepSelect(dashboard, opt_id):
         opt_delete_src = "n" if opt_delete_src == "" else opt_delete_src
         if opt_delete_src == "y":
             print("Deleting symlink to source...")
-            system(f"rm /usr/src/nyananime/src-episodes/{opt_id}")
+            system(f"rm {dashboard.path}/src-episodes/{opt_id}")
             files = getFiles(opt_id)
     
     if files["src_files"] == "0":
@@ -20,8 +20,8 @@ def stepSelect(dashboard, opt_id):
             opt_sel_src = subprocess.getoutput("mktemp")
             system(f'ranger --choosedir="{opt_sel_src}" 1>&2')
             opt_sel_src = subprocess.getoutput(f"cat {opt_sel_src}")
-            system(f"rm -rf /usr/src/nyananime/src-episodes/{opt_id}")
-            system(f'ln -sf "{opt_sel_src}" /usr/src/nyananime/src-episodes/{opt_id}')
+            system(f"rm -rf {dashboard.path}/src-episodes/{opt_id}")
+            system(f'ln -sf "{opt_sel_src}" {dashboard.path}/src-episodes/{opt_id}')
             files = getFiles(opt_id)
 
     if files["dest_files"] != "0":
@@ -29,5 +29,5 @@ def stepSelect(dashboard, opt_id):
         opt_delete_dest = "n" if opt_delete_dest == "" else opt_delete_dest
         if opt_delete_dest == "y":
             print("Deleting destination files...")
-            system(f"rm -rf /usr/src/nyananime/dest-episodes/{opt_id}/*")
+            system(f"rm -rf {dashboard.path}/dest-episodes/{opt_id}/*")
             files = getFiles(opt_id)

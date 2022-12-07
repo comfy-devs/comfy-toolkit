@@ -5,6 +5,7 @@ services:
     volumes:
       - ${NYANANIME_CORE_PATH}:/usr/src/nyananime
       - ${NYANANIME_TORRENTS_PATH}:/usr/src/torrents
+      - ${NYANANIME_DATA_PATH}:/usr/src/data
     build:
       context: ./
       dockerfile: .docker/images/nyananime-toolkit/Dockerfile

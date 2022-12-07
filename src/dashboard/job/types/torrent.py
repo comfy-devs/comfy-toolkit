@@ -2,8 +2,8 @@ import subprocess, os
 from job.job import Job
 
 class TorrentJob(Job):
-    def __init__(self, jobAnimeID):
-        Job.__init__(self, "torrent")
+    def __init__(self, dashboard, jobAnimeID):
+        Job.__init__(self, dashboard, "torrent")
         self.jobAnimeID = jobAnimeID
         self.jobPath = self.jobAnimeID
         self.jobName = f"Torrent job for '{self.jobPath}'"
@@ -12,7 +12,7 @@ class TorrentJob(Job):
         DEVNULL = open(os.devnull, 'wb')
         
         self.startSection(f"Creating torrent for '{self.jobPath}'")
-        self.jobSubprocess = subprocess.Popen(["../scripts/torrent-create.sh", f"/usr/src/nyananime/dest-episodes/{self.jobPath}", f"/usr/src/nyananime/dest-episodes/{self.jobPath}/series.torrent", self.jobAnimeID, "Auto-generated torrent for Nyan Anime."], stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        self.jobSubprocess = subprocess.Popen(["../scripts/torrent-create.sh", f"{self.dashboard.path}/dest-episodes/{self.jobPath}", f"{self.dashboard.path}/dest-episodes/{self.jobPath}/series.torrent", self.jobAnimeID, "Auto-generated torrent for Nyan Anime."], stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         while self.jobSubprocess.stdout != None:
             line = str(self.jobSubprocess.stdout.readline())
             if not line: break

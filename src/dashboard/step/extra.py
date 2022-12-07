@@ -10,8 +10,9 @@ def downloadPoster(anilistID, posterUrl):
 
 def stepExtraAnime(anilistID, media, mediaMAL):
     media["title"]["romaji"] = media["title"]["romaji"].replace('\'', '\\\'')
+    media["description"] = media["description"].replace('\'', '\\\'')
     print(f'''INSERT INTO animes (id, title, synopsis, episodes, type, status, genres, tags, rating, `group`, season, presets, location, timestamp)
-VALUES ('{anilistID}', '{media["title"]["romaji"]}', '{""}', {media["episodes"]}, {media["format"]}, {media["status"]}, {media["genres"]}, 1
+VALUES ('{anilistID}', '{media["title"]["romaji"]}', '{media["description"]}', {media["episodes"]}, {media["format"]}, {media["status"]}, {media["genres"]}, 1
 , 0, NULL, NULL, 4, 0, {mediaMAL['timestamp']});\n''')
 
     selection = input("> Edit? [n]: ")
@@ -21,10 +22,6 @@ VALUES ('{anilistID}', '{media["title"]["romaji"]}', '{""}', {media["episodes"]}
         mediaTitle = media["title"]["romaji"][:32] if len(media["title"]["romaji"]) > 32 else media["title"]["romaji"]
         animeTitle = input(f"> Anime title? [{colorize('gray', mediaTitle)}]: ")
         animeTitle = media["title"]["romaji"] if animeTitle == "" else animeTitle
-        # mediaSynopsis = media["description"][:32] if len(media["description"]) > 32 else media["description"]
-        # opt_sql_anime_synopsis = input(f"> Anime synopsis? [{colorize('gray', mediaSynopsis + '...')}]: ")
-        # opt_sql_anime_synopsis = media["description"] if opt_sql_anime_synopsis == "" else opt_sql_anime_synopsis
-        animeSynopsis = input(f"> Anime synopsis?: ")
         animeEpisodeCount = input(f"> Anime episode count? [{colorize('gray', media['episodes'])}]: ")
         animeEpisodeCount = media["episodes"] if animeEpisodeCount == "" else animeEpisodeCount
         animeType = input(f"> Anime type? [{colorize('gray', media['format'])}]: ")
@@ -49,7 +46,7 @@ VALUES ('{anilistID}', '{media["title"]["romaji"]}', '{""}', {media["episodes"]}
         animeTimestamp = mediaMAL['timestamp'] if animeTimestamp == "" else animeTimestamp
         
         print(f'''INSERT INTO animes (id, title, synopsis, episodes, type, status, genres, tags, rating, `group`, season, presets, location, timestamp)
-    VALUES ('{anilistID}', '{animeTitle}', '{animeSynopsis}', {animeEpisodeCount}, {animeType}, {animeStatus}, {animeGenres}, {animeTags}
+    VALUES ('{anilistID}', '{animeTitle}', '{media["description"]}', {animeEpisodeCount}, {animeType}, {animeStatus}, {animeGenres}, {animeTags}
     , {animeRating}, {animeGroup}, {animeSeason}, {animePresets}, {animeLocation}, {animeTimestamp});\n''')
         input("Press enter...")
 

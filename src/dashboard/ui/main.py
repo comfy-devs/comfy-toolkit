@@ -1,4 +1,5 @@
 import subprocess
+import os
 from os import system, path
 from util.general import colorize
 from step.select import stepSelect
@@ -6,6 +7,7 @@ from step.transcode import stepTranscode
 from step.extra import stepExtra, downloadPoster
 from job.types.download import DownloadJob
 from job.types.torrent import TorrentJob
+from job.types.upload_local import UploadLocalJob
 from job.types.upload import UploadJob
 from job.collection import JobCollection
 from util.api import fetchAnilist
@@ -61,16 +63,16 @@ def printMainUI(dashboard):
             selection = "n" if selection == "" else selection
             if selection == "y":
                 opt_magnet = ""
-                if not path.exists(f"/usr/src/nyananime/torrents/{opt_id}/link.conf"):
+                if not path.exists(f"{dashboard.path}/torrents/{opt_id}/link.conf"):
                     opt_magnet = input("> Magnet link?: ")
                 else:
-                    opt_magnet = subprocess.getoutput(f'cat "/usr/src/nyananime/torrents/{opt_id}/link.conf"')
-                jobs.append(DownloadJob(opt_id, None, opt_magnet))
+                    opt_magnet = subprocess.getoutput(f'cat "{dashboard.path}/torrents/{opt_id}/link.conf"')
+                jobs.append(DownloadJob(dashboard, opt_id, None, opt_magnet))
             else:
                 stepSelect(dashboard, opt_id)
 
             # Poster is needed for the torrent
-            if not path.exists(f"/usr/src/nyananime/dest-episodes/{opt_id}/poster.webp"):
+            if not path.exists(f"{dashboard.path}/dest-episodes/{opt_id}/poster.webp"):
                 media = fetchAnilist(opt_id)
                 downloadPoster(opt_id, media["coverImage"]["extraLarge"])
 
@@ -81,8 +83,8 @@ def printMainUI(dashboard):
                 stepExtra(opt_id, opt_mal_id)
             
             jobs.extend(stepTranscode(dashboard, opt_id))
-            jobs.append(TorrentJob(opt_id))
-            jobs.append(UploadJob(opt_id, None))
+            jobs.append(TorrentJob(dashboard, opt_id))
+            jobs.append(UploadJob(dashboard, opt_id, None))
             dashboard.addJobCollection(JobCollection(f"Complete series job for '{opt_id}'", jobs))
         elif selection == "2":
             system("clear")
@@ -96,11 +98,11 @@ def printMainUI(dashboard):
             selection = "n" if selection == "" else selection
             if selection == "y":
                 opt_magnet = ""
-                if not path.exists(f"/usr/src/nyananime/torrents/{opt_id}/link.conf"):
+                if not path.exists(f"{dashboard.path}/torrents/{opt_id}/link.conf"):
                     opt_magnet = input("> Magnet link?: ")
                 else:
-                    opt_magnet = subprocess.getoutput(f'cat "/usr/src/nyananime/torrents/{opt_id}/link.conf"')
-                jobs.append(DownloadJob(opt_id, opt_i, opt_magnet))
+                    opt_magnet = subprocess.getoutput(f'cat "{dashboard.path}/torrents/{opt_id}/link.conf"')
+                jobs.append(DownloadJob(dashboard, opt_id, opt_i, opt_magnet))
             else:
                 stepSelect(dashboard, opt_id)
 
@@ -111,19 +113,19 @@ def printMainUI(dashboard):
                 stepExtra(opt_id, opt_mal_id, True)
             
             jobs.extend(stepTranscode(dashboard, opt_id, opt_i))
-            jobs.append(UploadJob(opt_id, opt_i))
+            jobs.append(UploadJob(dashboard, opt_id, opt_i))
             dashboard.addJobCollection(JobCollection(f"New episodes job for '{opt_id}'", jobs))
         elif selection == "3":
             system("clear")
             print(f'{colorize("gray", f"Nyan Anime Toolkit - Only download")}')
             opt_id = input("> Anime ID? (ID from anilist.co): ")
             opt_magnet = ""
-            if not path.exists(f"/usr/src/nyananime/torrents/{opt_id}/link.conf"):
+            if not path.exists(f"{dashboard.path}/torrents/{opt_id}/link.conf"):
                 opt_magnet = input("> Magnet link?: ")
             else:
-                opt_magnet = subprocess.getoutput(f'cat "/usr/src/nyananime/torrents/{opt_id}/link.conf"')
+                opt_magnet = subprocess.getoutput(f'cat "{dashboard.path}/torrents/{opt_id}/link.conf"')
                 
-            dashboard.addJobCollection(JobCollection(f"Only download job for '{opt_id}'", [DownloadJob(opt_id, None, opt_magnet)]))
+            dashboard.addJobCollection(JobCollection(f"Only download job for '{opt_id}'", [DownloadJob(dashboard, opt_id, None, opt_magnet)]))
         elif selection == "4":
             system("clear")
             print(f'{colorize("gray", f"Nyan Anime Toolkit - Only transcode")}')
@@ -142,21 +144,30 @@ def printMainUI(dashboard):
             system("clear")
             print(f'{colorize("gray", f"Nyan Anime Toolkit - Only torrent")}')
             opt_id = input("> Anime ID? (ID from anilist.co): ")
-            dashboard.addJobCollection(JobCollection(f"Only torrent job for '{opt_id}'", [TorrentJob(opt_id)]))
+            dashboard.addJobCollection(JobCollection(f"Only torrent job for '{opt_id}'", [TorrentJob(dashboard, opt_id)]))
         elif selection == "7":
             system("clear")
             print(f'{colorize("gray", f"Nyan Anime Toolkit - Only upload")}')
             opt_id = input("> Anime ID? (ID from anilist.co): ")
-            dashboard.addJobCollection(JobCollection(f"Only upload job for '{opt_id}'", [UploadJob(opt_id, None)]))
+
+            selection = input("> Method of upload? (remote/local/local-move) [remote]: ")
+            selection = "remote" if selection == "" else selection
+            if selection == "remote":
+                dashboard.addJobCollection(JobCollection(f"Only upload job for '{opt_id}'", [UploadJob(dashboard, opt_id, None)]))
+            elif selection == "local":
+                dashboard.addJobCollection(JobCollection(f"Only upload local job for '{opt_id}'", [UploadLocalJob(dashboard, opt_id, None, False)]))
+            elif selection == "local-move":
+                dashboard.addJobCollection(JobCollection(f"Only upload local job for '{opt_id}'", [UploadLocalJob(dashboard, opt_id, None, True)]))
     elif selection == "3":
         system("clear")
         print(f'{colorize("gray", f"Nyan Anime Toolkit - Other")}')
         print("1) Add complete series data")
         print("2) Add new episodes data")
         print("3) Load previous jobs")
-        print("4) Back")
-        selection = input("> Selection? [4]: ")
-        selection = "4" if selection == "" else selection
+        print("4) Merge SQL scripts")
+        print("5) Back")
+        selection = input("> Selection? [5]: ")
+        selection = "5" if selection == "" else selection
 
         if selection == "1":
             system("clear")
@@ -172,6 +183,19 @@ def printMainUI(dashboard):
             stepExtra(opt_id, opt_mal_id, True)
         elif selection == "3":
             dashboard.loadJobs()
+        elif selection == "4":
+            system("clear")
+            print(f'{colorize("gray", f"Nyan Anime Toolkit - Merge SQL scripts")}')
+            opt_id = input("> Anime ID? (ID from anilist.co): ")
+
+            mergeText = ""
+            for root, _, files in os.walk(f"{dashboard.path}/dest-episodes/{opt_id}"):
+                for name in files:
+                    if name.endswith(".sql"):
+                        with open(f"{root}/{name}", "r") as file:
+                            mergeText += f"{file.read()}\n\n"
+            with open(f"{dashboard.path}/dest-episodes/{opt_id}/merged.sql", "w") as file:
+                file.write(mergeText)
     elif selection == "4":
         system("clear")
         print(f'{colorize("gray", f"Nyan Anime Toolkit - RSS")}')

@@ -1,8 +1,9 @@
 import threading
 
 class Job(threading.Thread):
-    def __init__(self, jobType):
+    def __init__(self, dashboard, jobType):
         threading.Thread.__init__(self)
+        self.dashboard = dashboard
         self.jobType = jobType
         self.jobName = "??"
         self.jobProgress = 0
@@ -18,3 +19,4 @@ class Job(threading.Thread):
     def endSection(self):
         self.jobProgress = 100
         self.jobDetails = "--"
+        self.jobSubprocess = None

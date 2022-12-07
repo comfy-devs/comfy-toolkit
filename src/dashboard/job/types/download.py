@@ -3,8 +3,8 @@ from os import system, path
 from job.job import Job
 
 class DownloadJob(Job):
-    def __init__(self, jobAnimeID, jobEpisodeIndex, jobMagnet):
-        Job.__init__(self, "download")
+    def __init__(self, dashboard, jobAnimeID, jobEpisodeIndex, jobMagnet):
+        Job.__init__(self, dashboard, "download")
         self.jobAnimeID = jobAnimeID
         self.jobEpisodeIndex = jobEpisodeIndex
         self.jobMagnet = jobMagnet
@@ -15,13 +15,13 @@ class DownloadJob(Job):
         DEVNULL = open(os.devnull, 'wb')
 
         self.startSection(f"Downloading files for '{self.jobPath}'...")
-        system(f"mkdir -p /usr/src/nyananime/torrents/{self.jobPath}")
-        if self.jobEpisodeIndex != None: system(f'mkdir -p /usr/src/nyananime/src-episodes/{self.jobAnimeID}')
-        if not path.exists(f"/usr/src/nyananime/src-episodes/{self.jobPath}"):
-            system(f'ln -sf /usr/src/nyananime/torrents/{self.jobPath} /usr/src/nyananime/src-episodes/{self.jobPath}')
+        system(f"mkdir -p {self.dashboard.path}/torrents/{self.jobPath}")
+        if self.jobEpisodeIndex != None: system(f'mkdir -p {self.dashboard.path}/src-episodes/{self.jobAnimeID}')
+        if not path.exists(f"{self.dashboard.path}/src-episodes/{self.jobPath}"):
+            system(f'ln -sf {self.dashboard.path}/torrents/{self.jobPath} {self.dashboard.path}/src-episodes/{self.jobPath}')
 
-        system(f"echo '{self.jobMagnet}' > /usr/src/nyananime/torrents/{self.jobPath}/link.conf")
-        self.jobSubprocess = subprocess.Popen(["transmission-cli", "-v", "-w", f"/usr/src/nyananime/torrents/{self.jobPath}", self.jobMagnet], stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+        system(f"echo '{self.jobMagnet}' > {self.dashboard.path}/torrents/{self.jobPath}/link.conf")
+        self.jobSubprocess = subprocess.Popen(["transmission-cli", "-v", "-w", f"{self.dashboard.path}/torrents/{self.jobPath}", self.jobMagnet], stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
         while self.jobSubprocess.stdout != None:
             line = str(self.jobSubprocess.stdout.readline())
             if not line: break

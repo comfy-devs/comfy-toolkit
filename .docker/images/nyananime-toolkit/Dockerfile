@@ -37,14 +37,20 @@ WORKDIR /usr/src/app
 # Install extra packages
 RUN pacman --noconfirm -Sy neovim
 
-# Build src
-COPY . .
-RUN cd src/dashboard && pip install -r requirements.txt
+# Build cool stuffs
+COPY src/clean-vtt src/clean-vtt
+COPY src/create-torrent src/create-torrent
 RUN cd src/clean-vtt && yarn
 RUN cd src/clean-vtt && yarn run build && yarn remove $(cat package.json | jq -r '.devDependencies | keys | join(" ")')
 RUN cd src/create-torrent && yarn
 RUN cd src/create-torrent && yarn run build && yarn remove $(cat package.json | jq -r '.devDependencies | keys | join(" ")')
 RUN cd src/create-torrent && sed -i 's/flat()/flat(64)/' node_modules/create-torrent/get-files.js
+
+# Build dashboard
+COPY src/dashboard/requirements.txt src/dashboard/requirements.txt
+RUN cd src/dashboard && pip install -r requirements.txt
+COPY src/dashboard src/dashboard
+COPY src/scripts src/scripts
 
 # Stage: run
 WORKDIR /usr/src/app/src/dashboard

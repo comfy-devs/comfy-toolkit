@@ -1,3 +1,4 @@
+from datetime import timedelta
 import subprocess, os
 from iso639 import languages
 from os import system, path
@@ -78,6 +79,7 @@ class TranscodingJob(Job):
         self.endSection()
 
         system(f'mkdir -p "{self.dashboard.path}/dest-episodes/{self.jobPath}"')
+        self.startSection(f"Transcoding '{self.jobPath}' ({self.jobCodec})...")
         if self.jobCodec == "x264" and not path.exists(f"{self.dashboard.path}/dest-episodes/{self.jobPath}/episode_x264.mp4") and not path.exists(f"{self.dashboard.path}/dest-episodes/{self.jobPath}/hls/x264/master.m3u8"):
             args = ["../scripts/ffmpeg-x264-medium.sh", self.jobSrcPath, f"{self.dashboard.path}/dest-episodes/{self.jobPath}"]
             self.jobSubprocess = subprocess.Popen(args, stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
@@ -85,7 +87,6 @@ class TranscodingJob(Job):
             args = ["../scripts/ffmpeg-vp9.sh", self.jobSrcPath, f"{self.dashboard.path}/dest-episodes/{self.jobPath}"]
             args.extend(self.jobVideoOptions)
             self.jobSubprocess = subprocess.Popen(args, stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-        self.startSection(f"Transcoding '{self.jobPath}' ({self.jobCodec})...")
         self.runProgress()
         self.endSection()
         
@@ -162,10 +163,7 @@ class TranscodingJob(Job):
 
         self.startSection(f"Generating thumbnails for '{self.jobPath}'...")
         if not path.exists(f"{self.dashboard.path}/dest-episodes/{self.jobPath}/thumbnail.webp"):
-            self.jobSubprocess = subprocess.Popen(["../scripts/ffmpeg-thumbnail.sh", self.jobSrcPath, f"{self.dashboard.path}/dest-episodes/{self.jobPath}", "webp"], stdin=DEVNULL, stdout=DEVNULL, stderr=DEVNULL)
-            self.jobSubprocess.wait()
-        if not path.exists(f"{self.dashboard.path}/dest-episodes/{self.jobPath}/thumbnail.jpg"):
-            self.jobSubprocess = subprocess.Popen(["../scripts/ffmpeg-thumbnail.sh", self.jobSrcPath, f"{self.dashboard.path}/dest-episodes/{self.jobPath}", "jpg"], stdin=DEVNULL, stdout=DEVNULL, stderr=DEVNULL)
+            self.jobSubprocess = subprocess.Popen(["../scripts/ffmpeg-thumbnail.sh", self.jobSrcPath, f"{self.dashboard.path}/dest-episodes/{self.jobPath}"], stdin=DEVNULL, stdout=DEVNULL, stderr=DEVNULL)
             self.jobSubprocess.wait()
         self.endSection()
 
@@ -181,11 +179,21 @@ class TranscodingJob(Job):
             self.jobSubprocess.wait()
         self.endSection()
 
+        self.startSection(f"Generating VMAF score from '{self.jobPath}'...")
         if not path.exists(f"{self.dashboard.path}/dest-episodes/{self.jobPath}/vmaf_{self.jobCodec}.sql"):
             self.jobSubprocess = subprocess.Popen([f"../scripts/ffmpeg-vmaf.sh", self.jobSrcPath, f'{self.dashboard.path}/dest-episodes/{self.jobPath}/episode_{self.jobCodec}.{"mp4" if self.jobCodec == "x264" else "webm"}'], stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-        self.startSection(f"Generating VMAF score from '{self.jobPath}'...")
         self.runProgress()
         self.endSection()
-        
+
+        self.startSection(f"Generating timeline from '{self.jobPath}'...")
+        if not path.exists(f"{self.dashboard.path}/dest-episodes/{self.jobPath}/timeline_0.webp"):
+            for n in range(0, self.jobSrcFrames, 120 * 6 * 6):
+                time_second = round(n / 24)
+                time = "{:0>8}".format(str(timedelta(seconds=time_second)))
+                self.jobSubprocess = subprocess.Popen([f"../scripts/ffmpeg-timeline.sh", self.jobSrcPath, f"{self.dashboard.path}/dest-episodes/{self.jobPath}", time, str(time_second)], stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+                self.jobSubprocess.wait()
+                self.jobProgress = round((n / self.jobSrcFrames) * 100, 2)
+        self.endSection()
+
         self.jobName = f"Transcoding job for '{self.jobPath}'"
         DEVNULL.close()

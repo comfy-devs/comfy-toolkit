@@ -8,5 +8,6 @@ SIZE=$(stat --format "%s" "$1")
 DURATION=$(ffprobe -i "$1" -v quiet -show_entries format=duration -hide_banner -of default=noprint_wrappers=1:nokey=1)
 let "V_BITRATE = $V_BITRATE / $DURATION"
 let "A_BITRATE = $A_BITRATE / $DURATION"
-RESULT="INSERT IGNORE INTO encodes (id, episode, preset, videoBitrate, audioBitrate, size, duration) VALUES (\"$3-1\", \"$3\", 1, $V_BITRATE, $A_BITRATE, $SIZE, $DURATION)"
+RESULT="INSERT IGNORE INTO encodes (id, episode, preset, videoBitrate, audioBitrate, size) VALUES (\"$3-1\", \"$3\", 1, $V_BITRATE, $A_BITRATE, $SIZE)"
+RESULT="$RESULT\nUPDATE episodes SET duration=$DURATION WHERE id=\"$3\""
 echo $RESULT > $2/stats_vp9.sql

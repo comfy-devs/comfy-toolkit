@@ -12,7 +12,7 @@ class UploadLocalJob(Job):
         self.jobMove = jobMove
 
     def run(self):
-        jobDir = f"{self.dashboard.path}/dest-episodes/{self.jobPath}"
+        jobDir = f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}"
         methodText = "Moving" if self.jobMove else "Copying"
         self.startSection(f"{methodText} files for '{self.jobPath}'...")
         for root, _, files in os.walk(jobDir):

@@ -3,10 +3,10 @@ from util.general import colorize
 from util.api import fetchAnilist, fetchMAL
 
 def downloadPoster(anilistID, posterUrl):
-    system(f"wget -O /usr/src/nyananime/dest-episodes/{anilistID}/poster_in {posterUrl} > /dev/null")
-    system(f"convert /usr/src/nyananime/dest-episodes/{anilistID}/poster_in /usr/src/nyananime/dest-episodes/{anilistID}/poster.jpg")
-    system(f"cwebp -quiet -q 90 /usr/src/nyananime/dest-episodes/{anilistID}/poster_in -o /usr/src/nyananime/dest-episodes/{anilistID}/poster.webp")
-    system(f"rm /usr/src/nyananime/dest-episodes/{anilistID}/poster_in")
+    system(f"wget -O /usr/src/nyananime/processed/{anilistID}/poster_in {posterUrl} > /dev/null")
+    system(f"convert /usr/src/nyananime/processed/{anilistID}/poster_in /usr/src/nyananime/processed/{anilistID}/poster.jpg")
+    system(f"cwebp -quiet -q 90 /usr/src/nyananime/processed/{anilistID}/poster_in -o /usr/src/nyananime/processed/{anilistID}/poster.webp")
+    system(f"rm /usr/src/nyananime/processed/{anilistID}/poster_in")
 
 def stepExtraAnime(anilistID, media, mediaMAL):
     media["title"]["romaji"] = media["title"]["romaji"].replace('\'', '\\\'')

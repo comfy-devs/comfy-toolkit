@@ -6,6 +6,8 @@ services:
       - ${NYANANIME_CORE_PATH}:/usr/src/nyananime
       - ${NYANANIME_TORRENTS_PATH}:/usr/src/torrents
       - ${NYANANIME_DATA_PATH}:/usr/src/data
+    environment:
+      NYANANIME_TMPFS_SIZE: "${NYANANIME_TMPFS_SIZE}"
     build:
       context: ./
       dockerfile: .docker/images/nyananime-toolkit/Dockerfile

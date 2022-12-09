@@ -15,13 +15,13 @@ class DownloadJob(Job):
         DEVNULL = open(os.devnull, 'wb')
 
         self.startSection(f"Downloading files for '{self.jobPath}'...")
-        system(f"mkdir -p {self.dashboard.path}/torrents/{self.jobPath}")
-        if self.jobEpisodeIndex != None: system(f'mkdir -p {self.dashboard.path}/src-episodes/{self.jobAnimeID}')
-        if not path.exists(f"{self.dashboard.path}/src-episodes/{self.jobPath}"):
-            system(f'ln -sf {self.dashboard.path}/torrents/{self.jobPath} {self.dashboard.path}/src-episodes/{self.jobPath}')
+        system(f"mkdir -p {self.dashboard.fileSystem.basePath}/torrents/{self.jobPath}")
+        if self.jobEpisodeIndex != None: system(f'mkdir -p {self.dashboard.fileSystem.basePath}/source/{self.jobAnimeID}')
+        if not path.exists(f"{self.dashboard.fileSystem.basePath}/source/{self.jobPath}"):
+            system(f'ln -sf {self.dashboard.fileSystem.basePath}/torrents/{self.jobPath} {self.dashboard.fileSystem.basePath}/source/{self.jobPath}')
 
-        system(f"echo '{self.jobMagnet}' > {self.dashboard.path}/torrents/{self.jobPath}/link.conf")
-        self.jobSubprocess = subprocess.Popen(["transmission-cli", "-v", "-w", f"{self.dashboard.path}/torrents/{self.jobPath}", self.jobMagnet], stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+        system(f"echo '{self.jobMagnet}' > {self.dashboard.fileSystem.basePath}/torrents/{self.jobPath}/link.conf")
+        self.jobSubprocess = subprocess.Popen(["transmission-cli", "-v", "-w", f"{self.dashboard.fileSystem.basePath}/torrents/{self.jobPath}", self.jobMagnet], stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
         while self.jobSubprocess.stdout != None:
             line = str(self.jobSubprocess.stdout.readline())
             if not line: break

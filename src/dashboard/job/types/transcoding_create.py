@@ -16,10 +16,10 @@ class TranscodingCreateJob(Job):
         DEVNULL = open(os.devnull, 'wb')
 
         jobs = []
-        entries = subprocess.getoutput(f'find {self.dashboard.path}/src-episodes/{self.jobPath}/ -type f -name "*.mkv" -printf "%P\\n" | sort').split("\n")
+        entries = subprocess.getoutput(f'find {self.dashboard.fileSystem.basePath}/source/{self.jobPath}/ -type f -name "*.mkv" -printf "%P\\n" | sort').split("\n")
         i = self.jobStartIndex
         for entry in entries:
-            jobs.append(TranscodingJob(self.dashboard, self.jobAnimeID, i, f"{self.dashboard.path}/src-episodes/{self.jobPath}/{entry}", "x264", []))
+            jobs.append(TranscodingJob(self.dashboard, self.jobAnimeID, i, f"source/{self.jobPath}/{entry}", "x264", []))
             i += 1
         jobs.extend(self.jobCollection.jobs)
         self.jobCollection.jobs = jobs

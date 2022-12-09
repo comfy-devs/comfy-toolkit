@@ -31,8 +31,8 @@ def colorize(color, text):
 
 
 def getFiles(id):
-    system(f"mkdir -p /usr/src/nyananime/src-episodes/{id}")
-    system(f"mkdir -p /usr/src/nyananime/dest-episodes/{id}")
-    src_files = subprocess.getoutput(f"find -L /usr/src/nyananime/src-episodes/{id} -name *.mkv | wc -l")
-    dest_files = subprocess.getoutput(f"find /usr/src/nyananime/dest-episodes/{id} -name *.mp4 | wc -l")
+    system(f"mkdir -p /usr/src/nyananime/source/{id}")
+    system(f"mkdir -p /usr/src/nyananime/processed/{id}")
+    src_files = subprocess.getoutput(f"find -L /usr/src/nyananime/source/{id} -name *.mkv | wc -l")
+    dest_files = subprocess.getoutput(f"find /usr/src/nyananime/processed/{id} -name *.mp4 | wc -l")
     return { "src_files": src_files, "dest_files": dest_files }

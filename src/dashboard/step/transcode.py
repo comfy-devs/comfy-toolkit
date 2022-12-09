@@ -2,8 +2,7 @@ import subprocess
 from util.general import colorize
 from job.types.transcoding import TranscodingJob
 
-# TODO: fix this for single episodes
-def stepTranscode(dashboard, opt_id, i=0):
+def stepTranscode(dashboard, opt_id, i=None):
     opt_codec = input("> Encoding codec? (x264/vp9) [x264]: ")
     opt_codec = "x264" if opt_codec == "" else opt_codec
 
@@ -11,12 +10,12 @@ def stepTranscode(dashboard, opt_id, i=0):
     opt_bitrate = ""
     opt_max_bitrate = ""
     if opt_codec == "vp9":
-        entries = list(filter(None, subprocess.getoutput(f'find {dashboard.path}/dest-episodes/{opt_id}/ -type f -name "*.mp4" -printf "%P\\n" | sort').split("\n")))
+        entries = list(filter(None, subprocess.getoutput(f'find {dashboard.fileSystem.basePath}/processed/{opt_id}/ -type f -name "*.mp4" -printf "%P\\n" | sort').split("\n")))
         all_bitrate = 0
         if len(entries) > 0:
             print(f"Listing bitrates of previous transcodes ({len(entries)})...")
             for entry in entries:
-                v_bitrate = subprocess.getoutput(f'ffprobe -i "{dashboard.path}/dest-episodes/{opt_id}/{entry}" -v quiet -select_streams v:0 -show_entries stream=bit_rate -hide_banner -of default=noprint_wrappers=1:nokey=1')
+                v_bitrate = subprocess.getoutput(f'ffprobe -i "{dashboard.fileSystem.basePath}/processed/{opt_id}/{entry}" -v quiet -select_streams v:0 -show_entries stream=bit_rate -hide_banner -of default=noprint_wrappers=1:nokey=1')
                 try:
                     v_bitrate = round(float(v_bitrate) / 1000)
                     all_bitrate += v_bitrate
@@ -38,9 +37,14 @@ def stepTranscode(dashboard, opt_id, i=0):
         opt_max_bitrate = opt_max_bitrate_r if opt_max_bitrate == "" else opt_max_bitrate
 
     jobs = []
-    entries = subprocess.getoutput(f'find {dashboard.path}/src-episodes/{opt_id}/ -type f -name "*.mkv" -printf "%P\\n" | sort').split("\n")
-    for entry in entries:
-        jobs.append(TranscodingJob(dashboard, opt_id, i, f"{dashboard.path}/src-episodes/{opt_id}/{entry}", opt_codec, [opt_min_bitrate, opt_bitrate, opt_max_bitrate]))
-        i += 1
+    entries = subprocess.getoutput(f'find {dashboard.fileSystem.basePath}/source/{opt_id}/ -type f -name "*.mkv" -printf "%P\\n" | sort').split("\n")
+    if i != None:
+        entry = entries[i] if len(entries) > 1 else entries[0]
+        jobs.append(TranscodingJob(dashboard, opt_id, i, f"source/{opt_id}/{entry}", opt_codec, [opt_min_bitrate, opt_bitrate, opt_max_bitrate]))
+    else:
+        i = 0
+        for entry in entries:
+            jobs.append(TranscodingJob(dashboard, opt_id, i, f"source/{opt_id}/{entry}", opt_codec, [opt_min_bitrate, opt_bitrate, opt_max_bitrate]))
+            i += 1
     
     return jobs

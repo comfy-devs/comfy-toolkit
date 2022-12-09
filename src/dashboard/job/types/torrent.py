@@ -12,7 +12,7 @@ class TorrentJob(Job):
         DEVNULL = open(os.devnull, 'wb')
         
         self.startSection(f"Creating torrent for '{self.jobPath}'")
-        self.jobSubprocess = subprocess.Popen(["../scripts/torrent-create.sh", f"{self.dashboard.path}/dest-episodes/{self.jobPath}", f"{self.dashboard.path}/dest-episodes/{self.jobPath}/series.torrent", self.jobAnimeID, "Auto-generated torrent for Nyan Anime."], stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        self.jobSubprocess = subprocess.Popen(["../scripts/torrent-create.sh", f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}", f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/series.torrent", self.jobAnimeID, "Auto-generated torrent for Nyan Anime."], stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         while self.jobSubprocess.stdout != None:
             line = str(self.jobSubprocess.stdout.readline())
             if not line: break

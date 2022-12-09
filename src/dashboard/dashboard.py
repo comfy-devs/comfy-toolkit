@@ -1,5 +1,6 @@
 import feedparser, re, subprocess
 from os import system, path
+from util.fs import NyanFilesystem
 from util.general import setInterval, colorize
 from ui.main import printMainUI
 from ui.jobs import printJobsUI
@@ -10,7 +11,7 @@ from job.collection import JobCollection
 
 class Dashboard:
     def __init__(self):
-        self.path = "/usr/src/nyananime"
+        self.fileSystem = NyanFilesystem()
         self.jobCollections = []
         self.jobsUIEnabled = False
         self.jobsUIShowCompleted = True
@@ -64,17 +65,17 @@ class Dashboard:
 
     def changeJobStatus(self, animeID, episodeIndex, status):
         lines = []
-        with open(f"{self.path}/jobs/{animeID}/{episodeIndex}.conf") as f:
+        with open(f"{self.fileSystem.basePath}/jobs/{animeID}/{episodeIndex}.conf") as f:
             lines = f.readlines()
         lines[3] = status
-        with open(f"{self.path}/jobs/{animeID}/{episodeIndex}.conf", "w") as f:
+        with open(f"{self.fileSystem.basePath}/jobs/{animeID}/{episodeIndex}.conf", "w") as f:
             f.writelines(lines)
 
     def loadJobs(self):
-        entries = subprocess.getoutput(f'find {self.path}/jobs/ -type f -name "*.conf" -printf "%P\\n" | sort').split("\n")
+        entries = subprocess.getoutput(f'find {self.fileSystem.basePath}/jobs/ -type f -name "*.conf" -printf "%P\\n" | sort').split("\n")
         for entry in entries:
             if entry == "": continue
-            with open(f"{self.path}/jobs/{entry}") as f:
+            with open(f"{self.fileSystem.basePath}/jobs/{entry}") as f:
                 jobLines = f.readlines()
                 animeID = jobLines[0].strip()
                 episodeIndex = int(jobLines[1].strip())
@@ -99,8 +100,8 @@ class Dashboard:
 
     def loadRSS(self):
         self.rssFeeds = []
-        if path.exists(f"{self.path}/rss/feeds.conf"):
-            with open(f'{self.path}/rss/feeds.conf') as f:
+        if path.exists(f"{self.fileSystem.basePath}/rss/feeds.conf"):
+            with open(f'{self.fileSystem.basePath}/rss/feeds.conf') as f:
                 rssLines = f.readlines()
                 for i in range(len(rssLines)):
                     if rssLines[i].startswith("#"):
@@ -108,8 +109,8 @@ class Dashboard:
                     self.rssFeeds.append(feedparser.parse(rssLines[i]))
 
         self.rssFilters = []
-        if path.exists(f"{self.path}/rss/filters.conf"):
-            with open(f'{self.path}/rss/filters.conf') as f:
+        if path.exists(f"{self.fileSystem.basePath}/rss/filters.conf"):
+            with open(f'{self.fileSystem.basePath}/rss/filters.conf') as f:
                 rssLines = f.readlines()
                 i = 0
                 for j in range(len(rssLines)):
@@ -130,29 +131,33 @@ class Dashboard:
                     if match != None:
                         # TODO: Support stupid animes which tag with floating points
                         episodeIndex = int(match.group(1)) - 1
-                        if not path.exists(f"{self.path}/jobs/{rssFilter['id']}/{episodeIndex}.conf"):
+                        if not path.exists(f"{self.fileSystem.basePath}/jobs/{rssFilter['id']}/{episodeIndex}.conf"):
                             jobs.append(f"-> Episode {colorize('gray', episodeIndex + 1)} of {colorize('gray', rssFilter['id'])} (link: {colorize('gray', entry.link)})...")
                             if not dry:
-                                system(f"mkdir -p {self.path}/jobs/{rssFilter['id']}")
-                                with open(f"{self.path}/jobs/{rssFilter['id']}/{episodeIndex}.conf", "w") as f:
+                                system(f"mkdir -p {self.fileSystem.basePath}/jobs/{rssFilter['id']}")
+                                with open(f"{self.fileSystem.basePath}/jobs/{rssFilter['id']}/{episodeIndex}.conf", "w") as f:
                                     print(f"Creating a job (episode {colorize('gray', episodeIndex + 1)} of {colorize('gray', rssFilter['id'])}, link: {colorize('gray', entry.link)})...")
                                     f.writelines([rssFilter["id"] + "\n", str(episodeIndex) + "\n", entry.link + "\n", "download"])
 
         return jobs
 
     def run(self):
+        system("clear")
         setInterval(1, self.asyncRun)
+
+        print("Importing SSH keys...")
         if path.exists(f"/usr/src/nyanime/ssh/id_rsa"):
             system("eval $(ssh-agent)")
             system("ssh-add /usr/src/nyanime/ssh/id_rsa")
         
-        system("mkdir -p {self.path}/src-episodes")
-        system("mkdir -p {self.path}/dest-episodes")
-        system("mkdir -p {self.path}/rss")
-        system("mkdir -p {self.path}/jobs")
-        system("mkdir -p {self.path}/torrents")
+        print("Creating initial directories...")
+        system(f"mkdir -p {self.fileSystem.basePath}/source")
+        system(f"mkdir -p {self.fileSystem.basePath}/processed")
+        system(f"mkdir -p {self.fileSystem.basePath}/misc")
+        system(f"mkdir -p {self.fileSystem.basePath}/rss")
+        system(f"mkdir -p {self.fileSystem.basePath}/jobs")
+        system(f"mkdir -p {self.fileSystem.basePath}/torrents")
 
-        system("clear")
         print("Loading RSS...")
         self.loadRSS()
 

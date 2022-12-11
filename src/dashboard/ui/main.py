@@ -174,12 +174,14 @@ def printMainUI(dashboard):
             opt_id = input("> Anime ID? (ID from anilist.co): ")
 
             mergeText = ""
-            for root, _, files in os.walk(f"{dashboard.fileSystem.basePath}/processed/{opt_id}"):
+            for root, _, files in os.walk(f"{dashboard.fileSystem.basePath}/misc/{opt_id}"):
                 for name in files:
-                    if name.endswith(".sql"):
+                    if name != "merged.sql" and name.endswith(".sql"):
                         with open(f"{root}/{name}", "r") as file:
-                            mergeText += f"{file.read()}\n\n"
-            with open(f"{dashboard.fileSystem.basePath}/processed/{opt_id}/merged.sql", "w") as file:
+                            text = file.read()
+                            textEnd = "\n" if text.endswith("\n") else "\n\n"
+                            mergeText += f"{text}{textEnd}"
+            with open(f"{dashboard.fileSystem.basePath}/misc/{opt_id}/merged.sql", "w") as file:
                 file.write(mergeText)
     elif selection == "4":
         system("clear")

@@ -1,4 +1,6 @@
 from datetime import timedelta
+from itertools import groupby
+import json
 import subprocess, os
 from iso639 import languages
 from os import system, path
@@ -13,6 +15,8 @@ class TranscodingJob(Job):
         self.jobSrcFrames = 0
         self.jobSrcSize = 0
         self.jobCodec = jobCodec
+        self.jobCodecEnum = 0 if jobCodec == "x264" else 1
+        self.jobCodecEpisodeName = f'episode_{self.jobCodec}.{"mp4" if self.jobCodec == "x264" else "webm"}'
         self.jobVideoOptions = jobVideoOptions
         self.jobPath = f"{self.jobAnimeID}/{self.jobEpisodeIndex}"
         self.jobName = f"Transcoding job for '{self.jobPath}'"
@@ -65,8 +69,8 @@ class TranscodingJob(Job):
                 elif "VMAF score:" in line:
                     # This is used to save output from "ffmpeg-vmaf.sh", because we want both progress and output
                     vmaf = round(float(line[line.index("score:")+len("score:"):line.index("\n")-1].strip()), 2)
-                    with open(f'{self.dashboard.fileSystem.basePath}/misc/{self.jobPath}/vmaf_{self.jobCodec}.sql', "w") as f:
-                        f.write(f'UPDATE encodes SET vmaf={vmaf} WHERE id="{self.jobAnimeID}-{self.jobEpisodeIndex}-{"0" if self.jobCodec == "x264" else "1"}"')
+                    with open(f'{self.dashboard.fileSystem.basePath}/misc/{self.jobPath}/stats_{self.jobCodec}_vmaf.sql', "w") as f:
+                        f.write(f'UPDATE encodes SET vmaf={vmaf} WHERE id="{self.jobAnimeID}-{self.jobEpisodeIndex}-{self.jobCodecEnum}";')
             except Exception as e:
                 print(e)
                 continue
@@ -75,6 +79,7 @@ class TranscodingJob(Job):
     # TODO: Add a check for PGS subtitles
     # TODO: Add a check for commentary second audio stream
     # TODO: Add a way to decide which one from 2 same language subtitles to use (bigger == the right one?)
+    # TODO: Save original subtitle streams
     def run(self):
         DEVNULL = open(os.devnull, 'wb')
         system(f'mkdir -p "{self.dashboard.fileSystem.mountPath}/processed/{self.jobPath}"')
@@ -108,11 +113,13 @@ class TranscodingJob(Job):
         self.startSection(f"Extracting subtitles from '{self.jobPath}'...")
         if not os.path.exists(f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/subs"):
             system(f'mkdir -p "{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/subs"')
+            system(f'mkdir -p "{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/subs/original"')
             system(f'mkdir -p "{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/hls/subs"')
             subtitleStreams = int(subprocess.getoutput(f'ffprobe -v error -select_streams s -show_entries stream=index -of csv=p=0 "{self.dashboard.fileSystem.getFile(self.jobSrcPath)}" | wc -w'))
             duration = subprocess.getoutput(f'ffprobe -i "{self.dashboard.fileSystem.getFile(self.jobSrcPath)}" -v quiet -show_entries format=duration -hide_banner -of default=noprint_wrappers=1:nokey=1')
             processedSubtitles = []
             for i in range(subtitleStreams):
+                subtitleStreamCodec = subprocess.getoutput(f'ffprobe -v error -select_streams s:{i} -show_entries stream=codec_name -of csv=p=0 "{self.dashboard.fileSystem.getFile(self.jobSrcPath)}"')
                 subtitleStreamLanguage = subprocess.getoutput(f'ffprobe -v error -select_streams s:{i} -show_entries stream=index:stream_tags=language -of csv=p=0 "{self.dashboard.fileSystem.getFile(self.jobSrcPath)}"')
                 if "," in subtitleStreamLanguage:
                     subtitleStreamLanguage = subtitleStreamLanguage[(subtitleStreamLanguage.index(",") + 1):]
@@ -124,6 +131,8 @@ class TranscodingJob(Job):
 
                 if not path.exists(f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/subs/{subtitleStreamLanguage}.vtt"):
                     self.startSection(f"Extracting subtitles ({subtitleStreamLanguage}, {i}/{subtitleStreams}) from '{self.jobPath}'...")
+                    self.jobSubprocess = subprocess.Popen(["../scripts/ffmpeg-subs.sh", self.dashboard.fileSystem.getFile(self.jobSrcPath), f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/subs/original/{subtitleStreamLanguage}.{subtitleStreamCodec}", f"{i}"], stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+                    self.runProgress()
                     self.jobSubprocess = subprocess.Popen(["../scripts/ffmpeg-subs.sh", self.dashboard.fileSystem.getFile(self.jobSrcPath), f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/subs/{subtitleStreamLanguage}.vtt", f"{i}"], stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
                     self.runProgress()
                     self.jobSubprocess = subprocess.Popen(["../scripts/subs-clean.sh", f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/subs/{subtitleStreamLanguage}.vtt"], stdin=DEVNULL, stdout=DEVNULL, stderr=DEVNULL)
@@ -137,15 +146,20 @@ class TranscodingJob(Job):
                     self.jobSubprocess.wait()
 
                 self.jobProgress = round((i / subtitleStreams) * 100, 2)
+
+            # Create .sql manifest to keep track of episode's subtitle tracks
+            with open(f"{self.dashboard.fileSystem.basePath}/misc/{self.jobPath}/subs.sql", "w") as f:
+                subtitleList = ",".join(processedSubtitles)
+                f.write(f'UPDATE episodes SET subtitles="{subtitleList}" WHERE id="{self.jobAnimeID}-{self.jobEpisodeIndex}";')
         self.endSection()
         
         # Edit master HLS playlist, if applicable
         self.startSection(f"Editing master HLS playlist of '{self.jobPath}'...")
-        if self.jobCodec == "x264" and not os.path.exists(f"{self.dashboard.fileSystem.basePath}/misc/{self.jobPath}/hls/{self.jobCodec}/master_original.m3u8"):
+        if self.jobCodec == "x264" and not os.path.exists(f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/hls/{self.jobCodec}/master_original.m3u8"):
             masterLines = []
             subtitleStreams = int(subprocess.getoutput(f'ffprobe -v error -select_streams s -show_entries stream=index -of csv=p=0 "{self.dashboard.fileSystem.getFile(self.jobSrcPath)}" | wc -w'))
-            with open(f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/hls/{self.jobCodec}/master.m3u8") as f:
-                masterLines = f.readlines()
+            with open(f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/hls/{self.jobCodec}/master.m3u8") as chaptersFile:
+                masterLines = chaptersFile.readlines()
                 for i in range(len(masterLines)):
                     if "#EXT-X-STREAM-INF" in masterLines[i] and ',SUBTITLES="subs"' not in masterLines[i]:
                         masterLines[i] = masterLines[i][:-1] + ',SUBTITLES="subs"\n'
@@ -164,10 +178,9 @@ class TranscodingJob(Job):
                     subtitleMedia = f'#EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-ID="subs",NAME="{languages.get(part2b=subtitleStreamLanguage).name}",DEFAULT={"YES" if subtitleStreamLanguage == "eng" else "NO"},FORCED=NO,URI="../subs/{subtitleStreamLanguage}.m3u8",LANGUAGE="{subtitleStreamLanguage}"\n'
                     if subtitleMedia not in masterLines:
                         masterLines.append(subtitleMedia)
-            system(f'mkdir -p "{self.dashboard.fileSystem.basePath}/misc/{self.jobPath}/hls/x264"')
-            system(f'mv "{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/hls/{self.jobCodec}/master.m3u8" "{self.dashboard.fileSystem.basePath}/misc/{self.jobPath}/hls/{self.jobCodec}/master_original.m3u8"')
-            with open(f'{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/hls/{self.jobCodec}/master.m3u8', "w") as f:
-                f.writelines(masterLines)
+            system(f'mv "{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/hls/{self.jobCodec}/master.m3u8" "{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/hls/{self.jobCodec}/master_original.m3u8"')
+            with open(f'{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/hls/{self.jobCodec}/master.m3u8', "w") as chaptersFile:
+                chaptersFile.writelines(masterLines)
         self.endSection()
 
         # Generate episode's thumbnails
@@ -175,29 +188,6 @@ class TranscodingJob(Job):
         if not path.exists(f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/thumbnail.webp"):
             self.jobSubprocess = subprocess.Popen(["../scripts/ffmpeg-thumbnail.sh", self.dashboard.fileSystem.getFile(self.jobSrcPath), f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}"], stdin=DEVNULL, stdout=DEVNULL, stderr=DEVNULL)
             self.jobSubprocess.wait()
-        self.endSection()
-
-        # Extract episode's thumbnails
-        self.startSection(f"Extracting chapters from '{self.jobPath}'...")
-        if not path.exists(f"{self.dashboard.fileSystem.basePath}/misc/{self.jobPath}/chapters.json"):
-            self.jobSubprocess = subprocess.Popen(["../scripts/ffmpeg-chapters.sh", self.dashboard.fileSystem.getFile(self.jobSrcPath), f"{self.dashboard.fileSystem.basePath}/misc/{self.jobPath}"], stdin=DEVNULL, stdout=DEVNULL, stderr=DEVNULL)
-            self.jobSubprocess.wait()
-        self.endSection()
-
-        # Generate episode's stats and save as .sql (bitrate, duration, ...)
-        self.startSection(f"Generating stats from '{self.jobPath}'...")
-        if not path.exists(f"{self.dashboard.fileSystem.basePath}/misc/{self.jobPath}/stats_{self.jobCodec}.sql"):
-            episodePath = self.dashboard.fileSystem.getFile(f'processed/{self.jobPath}/episode_{self.jobCodec}{"mp4" if self.jobCodec == "x264" else "webm"}')
-            self.jobSubprocess = subprocess.Popen([f"../scripts/ffmpeg-{self.jobCodec}-stats.sh", episodePath, f"{self.dashboard.fileSystem.basePath}/misc/{self.jobPath}", f"{self.jobAnimeID}-{self.jobEpisodeIndex}"], stdin=DEVNULL, stdout=DEVNULL, stderr=DEVNULL)
-            self.jobSubprocess.wait()
-        self.endSection()
-
-        # Generate episode's VMAF quality score and save as .sql
-        self.startSection(f"Generating VMAF score from '{self.jobPath}'...")
-        if not path.exists(f"{self.dashboard.fileSystem.basePath}/misc/{self.jobPath}/vmaf_{self.jobCodec}.sql"):
-            episodePath = self.dashboard.fileSystem.getFile(f'processed/{self.jobPath}/episode_{self.jobCodec}{"mp4" if self.jobCodec == "x264" else "webm"}')
-            self.jobSubprocess = subprocess.Popen([f"../scripts/ffmpeg-vmaf.sh", self.dashboard.fileSystem.getFile(self.jobSrcPath), episodePath], stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-        self.runProgress()
         self.endSection()
 
         # Generate episode's timeline in form of spritesheets
@@ -209,6 +199,59 @@ class TranscodingJob(Job):
                 self.jobSubprocess = subprocess.Popen([f"../scripts/ffmpeg-timeline.sh", self.dashboard.fileSystem.getFile(self.jobSrcPath), f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}", time, str(time_second)], stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
                 self.jobSubprocess.wait()
                 self.jobProgress = round((n / self.jobSrcFrames) * 100, 2)
+        self.endSection()
+
+        # Extract episode's chapters
+        self.startSection(f"Extracting chapters from '{self.jobPath}'...")
+        if not path.exists(f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/chapters.json"):
+            self.jobSubprocess = subprocess.Popen(["../scripts/ffmpeg-chapters.sh", self.dashboard.fileSystem.getFile(self.jobSrcPath), f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}"], stdin=DEVNULL, stdout=DEVNULL, stderr=DEVNULL)
+            self.jobSubprocess.wait()
+        self.endSection()
+
+        # Transform episode's chapters to .sql
+        if not path.exists(f"{self.dashboard.fileSystem.basePath}/misc/{self.jobPath}/chapters.sql"):
+            segments = []
+            with open(os.path.join(self.dashboard.currentPath, "segments.json"), "r") as f:
+                segments = json.loads(f.read())
+            chapters = []
+            with open(f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/chapters.json", "r") as f:
+                self.i = 0
+                def transformChapter(c):
+                    t = segments[c["tags"]["title"]] if c["tags"]["title"] in segments else -1
+                    return { "type": t, "start": round(float(c["start_time"])), "end": round(float(c["end_time"])) }
+                def processChapterGroup(k, g):
+                    length = g[len(g) - 1]["end"] - g[0]["start"]
+                    result = f'INSERT IGNORE INTO segments (id, pos, episode, `type`, `length`) VALUES ("{self.jobAnimeID}-{self.jobEpisodeIndex}-{self.i}", {self.i}, "{self.jobAnimeID}-{self.jobEpisodeIndex}", {k}, {length});'
+                    self.i += 1
+                    return result
+                chapters = json.loads(f.read())["chapters"]
+                chapters = [transformChapter(c) for c in chapters]
+                chapters = [processChapterGroup(k, list(g)) for k, g in groupby(chapters, key=lambda x: x["type"])]
+            with open(f"{self.dashboard.fileSystem.basePath}/misc/{self.jobPath}/chapters.sql", "w") as f:
+                f.write("\n".join(chapters))
+
+        # Extract episode's attachments
+        self.startSection(f"Extracting attachments for '{self.jobPath}'...")
+        if not path.exists(f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/attachments"):
+            system(f'mkdir -p "{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/attachments"')
+            self.jobSubprocess = subprocess.Popen(["../scripts/ffmpeg-attachments.sh", self.dashboard.fileSystem.getFile(self.jobSrcPath), f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}"], stdin=DEVNULL, stdout=DEVNULL, stderr=DEVNULL)
+            self.jobSubprocess.wait()
+        self.endSection()
+
+        # Generate episode's stats and save as .sql (bitrate, duration, ...)
+        self.startSection(f"Generating stats from '{self.jobPath}'...")
+        if not path.exists(f"{self.dashboard.fileSystem.basePath}/misc/{self.jobPath}/stats_{self.jobCodec}.sql"):
+            episodePath = self.dashboard.fileSystem.getFile(f"processed/{self.jobPath}/{self.jobCodecEpisodeName}")
+            self.jobSubprocess = subprocess.Popen([f"../scripts/ffmpeg-stats.sh", episodePath, f"{self.dashboard.fileSystem.basePath}/misc/{self.jobPath}/stats_{self.jobCodec}.sql", f"{self.jobAnimeID}-{self.jobEpisodeIndex}", f"{self.jobCodecEnum}"], stdin=DEVNULL, stdout=DEVNULL, stderr=DEVNULL)
+            self.jobSubprocess.wait()
+        self.endSection()
+
+        # Generate episode's VMAF quality score and save as .sql
+        self.startSection(f"Generating VMAF score from '{self.jobPath}'...")
+        if not path.exists(f"{self.dashboard.fileSystem.basePath}/misc/{self.jobPath}/stats_{self.jobCodec}_vmaf.sql"):
+            episodePath = self.dashboard.fileSystem.getFile(f"processed/{self.jobPath}/{self.jobCodecEpisodeName}")
+            self.jobSubprocess = subprocess.Popen([f"../scripts/ffmpeg-vmaf.sh", self.dashboard.fileSystem.getFile(self.jobSrcPath), episodePath], stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+        self.runProgress()
         self.endSection()
 
         self.jobName = f"Transcoding job for '{self.jobPath}'"

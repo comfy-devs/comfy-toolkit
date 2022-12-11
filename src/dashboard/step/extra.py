@@ -18,7 +18,7 @@ VALUES ('{anilistID}', '{media["title"]["romaji"]}', '{media["description"]}', {
     selection = input("> Edit? [n]: ")
     selection = "n" if selection == "" else selection
     if selection == "y":
-        # TODO: Finish auto-completing for synopsis, group, season
+        # TODO: Finish auto-completing for group, season
         mediaTitle = media["title"]["romaji"][:32] if len(media["title"]["romaji"]) > 32 else media["title"]["romaji"]
         animeTitle = input(f"> Anime title? [{colorize('gray', mediaTitle)}]: ")
         animeTitle = media["title"]["romaji"] if animeTitle == "" else animeTitle

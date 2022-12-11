@@ -1,3 +1,4 @@
+import os
 import feedparser, re, subprocess
 from os import system, path
 from util.fs import NyanFilesystem
@@ -11,6 +12,7 @@ from job.collection import JobCollection
 
 class Dashboard:
     def __init__(self):
+        self.currentPath = os.path.dirname(os.path.realpath(__file__))
         self.fileSystem = NyanFilesystem()
         self.jobCollections = []
         self.jobsUIEnabled = False

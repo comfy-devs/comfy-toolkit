@@ -6,11 +6,11 @@ createTorrent(process.argv[2], {
     comment: process.argv[5],
     createdBy: "Nyan Anime Toolkit",
     announceList: [
-        "udp://tracker.nyananime.xyz:449",
-        "wss://tracker.nyananime.xyz"
+        "udp://tracker.nyananime.xyz:9102",
+        "wss://tracker.nyananime.xyz:9102"
     ],
     onProgress: (done, length) => {
-        process.stdout.write(`${((done / length) * 100).toFixed(2)}\n`);
+        process.stdout.write(`progress=${((done / length) * 100).toFixed(2)}\n`);
     }
 }, (err, torrent) => {
     if(err) {

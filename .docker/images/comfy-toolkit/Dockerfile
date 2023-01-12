@@ -1,5 +1,5 @@
 # Stage: build
-FROM archlinux:base-20221127.0.105785
+FROM archlinux:base-devel-20230108.0.116909
 
 # Create new user (build)
 RUN useradd --shell=/bin/bash build
@@ -7,8 +7,7 @@ RUN echo "build ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
 # Build vmaf-git
 USER root
-RUN pacman --noconfirm -Syu gcc-libs doxygen git meson nasm vim
-RUN pacman --noconfirm -Sy base-devel wget
+RUN pacman --noconfirm -Syu doxygen git meson nasm wget
 USER build
 WORKDIR /tmp
 
@@ -18,7 +17,7 @@ RUN cd vmaf-git && makepkg --noconfirm -si
 
 # Build FFmpeg
 USER root
-RUN pacman --noconfirm -Sy libfdk-aac
+RUN pacman --noconfirm -Syu libfdk-aac
 USER build
 WORKDIR /tmp
 
@@ -29,15 +28,17 @@ RUN cd ffmpeg-git && wget -O PKGBUILD "https://aur.archlinux.org/cgit/aur.git/pl
 RUN cd ffmpeg-git && sed -i 's/--enable-version3/--enable-version3 --enable-nonfree --enable-libfdk-aac/' PKGBUILD
 RUN cd ffmpeg-git && makepkg --noconfirm -si
 
-# Install required packages
+# Install python
 USER root
-RUN pacman --noconfirm -Sy python python-pip nodejs yarn bc jq libwebp openssh rsync imagemagick ranger transmission-cli
+RUN pacman --noconfirm -Syu python3 && ln -sf python3 /usr/bin/python
+RUN python3 -m ensurepip
+RUN pip3 install --no-cache --upgrade pip setuptools
+
+# Install required packages (and extra useful ones)
+RUN pacman --noconfirm -Syu nodejs yarn bc jq libwebp openssh rsync imagemagick ranger transmission-cli neovim
+
+# Build node utility packages
 WORKDIR /usr/src/app
-
-# Install extra packages
-RUN pacman --noconfirm -Sy neovim
-
-# Build cool stuffs
 COPY src/clean-vtt src/clean-vtt
 COPY src/create-torrent src/create-torrent
 RUN cd src/clean-vtt && yarn
@@ -46,9 +47,10 @@ RUN cd src/create-torrent && yarn
 RUN cd src/create-torrent && yarn run build && yarn remove $(cat package.json | jq -r '.devDependencies | keys | join(" ")')
 RUN cd src/create-torrent && sed -i 's/flat()/flat(64)/' node_modules/create-torrent/get-files.js
 
-# Build dashboard
+# Prepare python dashboard
+WORKDIR /usr/src/app
 COPY src/dashboard/requirements.txt src/dashboard/requirements.txt
-RUN cd src/dashboard && pip install -r requirements.txt
+RUN cd src/dashboard && pip3 install -r requirements.txt
 COPY src/dashboard src/dashboard
 COPY src/scripts src/scripts
 

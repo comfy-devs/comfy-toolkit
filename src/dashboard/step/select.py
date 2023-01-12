@@ -14,7 +14,7 @@ def stepSelect(dashboard, opt_id):
             files = getFiles(opt_id)
     
     if files["src_files"] == "0":
-        opt_sel_method = input("> Anime selection method? (local) [local]: ")
+        opt_sel_method = input("> Show selection method? (local) [local]: ")
         opt_sel_method = "local" if opt_sel_method == "" else opt_sel_method
         if opt_sel_method == "local":
             opt_sel_src = subprocess.getoutput("mktemp")

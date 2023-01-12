@@ -17,7 +17,7 @@ def printJobsUI(dashboard):
         n += functools.reduce(lambda acc, curr: acc + len(curr.completedJobs), dashboard.jobCollections, 0)
 
     system("clear")
-    print(colorize("gray", f'Nyan Anime Toolkit - Jobs ({n})'))
+    print(colorize("gray", f'Comfy - Jobs ({n})'))
 
     for jobCollection in dashboard.jobCollections:
         print(f"| {colorize('bright_blue' if jobCollection.currentJob != None else ('bright_green' if len(jobCollection.jobs) == 0 else 'white'), jobCollection.name)}")

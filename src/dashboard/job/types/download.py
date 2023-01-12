@@ -3,12 +3,12 @@ from os import system, path
 from job.job import Job
 
 class DownloadJob(Job):
-    def __init__(self, dashboard, jobAnimeID, jobEpisodeIndex, jobMagnet):
+    def __init__(self, dashboard, jobShowID, jobEpisodeIndex, jobMagnet):
         Job.__init__(self, dashboard, "download")
-        self.jobAnimeID = jobAnimeID
+        self.jobShowID = jobShowID
         self.jobEpisodeIndex = jobEpisodeIndex
         self.jobMagnet = jobMagnet
-        self.jobPath = f"{self.jobAnimeID}/{self.jobEpisodeIndex}" if self.jobEpisodeIndex != None else self.jobAnimeID
+        self.jobPath = f"{self.jobShowID}/{self.jobEpisodeIndex}" if self.jobEpisodeIndex != None else self.jobShowID
         self.jobName = f"Download job for '{self.jobPath}'"
 
     def run(self):
@@ -16,7 +16,7 @@ class DownloadJob(Job):
 
         self.startSection(f"Downloading files for '{self.jobPath}'...")
         system(f"mkdir -p {self.dashboard.fileSystem.basePath}/torrents/{self.jobPath}")
-        if self.jobEpisodeIndex != None: system(f'mkdir -p {self.dashboard.fileSystem.basePath}/source/{self.jobAnimeID}')
+        if self.jobEpisodeIndex != None: system(f'mkdir -p {self.dashboard.fileSystem.basePath}/source/{self.jobShowID}')
         if not path.exists(f"{self.dashboard.fileSystem.basePath}/source/{self.jobPath}"):
             system(f'ln -sf {self.dashboard.fileSystem.basePath}/torrents/{self.jobPath} {self.dashboard.fileSystem.basePath}/source/{self.jobPath}')
 

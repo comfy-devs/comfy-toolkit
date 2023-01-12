@@ -6,17 +6,17 @@ def parseSize(size):
     unit = size[len(size)-1:]
     return int(float(number) * units[unit])
 
-class NyanFilesystem():
+class ComfyFilesystem():
     def __init__(self):
-        self.basePath = "/usr/src/nyananime"
+        self.basePath = "/usr/src/comfy"
         self.mountPath = self.basePath
         self.ram = False
         self.ramUsed = 0
         self.ramSize = 0
 
-        tmpfs_size = os.getenv("NYANANIME_TMPFS_SIZE")
-        if tmpfs_size != None:
-            self.mountPath = "/mnt/nyananime"
+        tmpfs_size = os.getenv("COMFY_TMPFS_SIZE")
+        if tmpfs_size != None and tmpfs_size != "":
+            self.mountPath = "/mnt/comfy"
             self.ram = True
             self.ramSize = parseSize(tmpfs_size)
             if os.path.exists(self.mountPath):

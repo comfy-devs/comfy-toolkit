@@ -27,13 +27,16 @@ def stepTranscode(dashboard, opt_id, i=None):
         else:
             print("No previous transcodes found! It is recommended you run x264 transcodes first in order to more accurately pick the right bitrate for VP9.")
 
-        opt_min_bitrate = input("> Minimal bitrate? (recommended: 550k) [550k]: ")
-        opt_min_bitrate = "550k" if opt_min_bitrate == "" else opt_min_bitrate
-        opt_bitrate_r = "1600k" if all_bitrate == 0 else f"{round(all_bitrate * 0.55)}k"
-        opt_bitrate = input(f"> Target bitrate? (recommended: (average * 0.55)k or 1600k) [{opt_bitrate_r}]: ")
+        opt_min_bitrate_r = "550k" if all_bitrate == 0 else f"{round(all_bitrate * 0.35)}k"
+        opt_min_bitrate = input(f"> Minimal bitrate? (recommended: (average * 0.35)k or 550k) [{opt_min_bitrate_r}]: ")
+        opt_min_bitrate = opt_min_bitrate_r if opt_min_bitrate == "" else opt_min_bitrate
+
+        opt_bitrate_r = "1600k" if all_bitrate == 0 else f"{round(all_bitrate * 0.4)}k"
+        opt_bitrate = input(f"> Target bitrate? (recommended: (average * 0.4)k or 1600k) [{opt_bitrate_r}]: ")
         opt_bitrate = opt_bitrate_r if opt_bitrate == "" else opt_bitrate
-        opt_max_bitrate_r = "2210k" if all_bitrate == 0 else f"{round(all_bitrate * 0.65)}k"
-        opt_max_bitrate = input(f"> Maximal bitrate? (recommended: (average * 0.65)k or 2210k) [{opt_max_bitrate_r}]: ")
+
+        opt_max_bitrate_r = "2210k" if all_bitrate == 0 else f"{round(all_bitrate * 0.5)}k"
+        opt_max_bitrate = input(f"> Maximal bitrate? (recommended: (average * 0.5)k or 2210k) [{opt_max_bitrate_r}]: ")
         opt_max_bitrate = opt_max_bitrate_r if opt_max_bitrate == "" else opt_max_bitrate
 
     jobs = []

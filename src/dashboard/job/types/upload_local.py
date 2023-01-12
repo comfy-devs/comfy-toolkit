@@ -3,11 +3,11 @@ from job.job import Job
 import shutil
 
 class UploadLocalJob(Job):
-    def __init__(self, dashboard, jobAnimeID, jobEpisodeIndex, jobMove=False):
+    def __init__(self, dashboard, jobShowID, jobEpisodeIndex, jobMove=False):
         Job.__init__(self, dashboard, "move")
-        self.jobAnimeID = jobAnimeID
+        self.jobShowID = jobShowID
         self.jobEpisodeIndex = jobEpisodeIndex
-        self.jobPath = f"{self.jobAnimeID}/{self.jobEpisodeIndex}" if self.jobEpisodeIndex != None else self.jobAnimeID
+        self.jobPath = f"{self.jobShowID}/{self.jobEpisodeIndex}" if self.jobEpisodeIndex != None else self.jobShowID
         self.jobName = f"Upload local job for '{self.jobPath}'"
         self.jobMove = jobMove
 

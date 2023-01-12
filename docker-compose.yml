@@ -1,16 +1,18 @@
 services:
-  nyananime-toolkit:
-    container_name: nyananime-toolkit
-    image: nyananime-toolkit:latest
+  comfy-toolkit:
+    container_name: comfy-toolkit
+    image: comfy-toolkit:latest
     volumes:
-      - ${NYANANIME_CORE_PATH}:/usr/src/nyananime
-      - ${NYANANIME_TORRENTS_PATH}:/usr/src/torrents
-      - ${NYANANIME_DATA_PATH}:/usr/src/data
+      - ${COMFY_CORE_PATH}:/usr/src/comfy
+      - ${COMFY_TORRENTS_PATH}:/usr/src/torrents
+      - G:\bcs:/usr/src/torrents/bcs
+      - ${COMFY_DATA_PATH}:/usr/src/data
     environment:
-      NYANANIME_TMPFS_SIZE: "${NYANANIME_TMPFS_SIZE}"
+      COMFY_TMPFS_SIZE: "${COMFY_TMPFS_SIZE}"
     build:
       context: ./
-      dockerfile: .docker/images/nyananime-toolkit/Dockerfile
+      dockerfile: .docker/images/comfy-toolkit/Dockerfile
     tty: yes
     env_file:
     - .env
+    privileged: true

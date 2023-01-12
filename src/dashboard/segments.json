@@ -1,8 +1,12 @@
 {
+    "[General]": "These chapter titles are used common phrases",
+    "OP": 0,
+    "ED": 2,
+    "Opening": 0,
+    "Ending": 2,
+
     "[Erai-Raws]": "These chapter titles are used in [Erai-Raws] releases",
     "Prologue": 1,
-    "Opening": 0,
     "Episode": 1,
-    "Ending": 2,
     "End Card": 2
 }

@@ -27,7 +27,7 @@ def printJobsUISelector(dashboard):
 
 def printMainUI(dashboard):
     system("clear")
-    print(f'{colorize("gray", f"Nyan Anime Toolkit - Menu")}')
+    print(f'{colorize("gray", f"Comfy - Menu")}')
     print("1) List jobs")
     print("2) Add a job")
     print("3) Other")
@@ -40,7 +40,7 @@ def printMainUI(dashboard):
         printJobsUISelector(dashboard)
     elif selection == "2":
         system("clear")
-        print(f'{colorize("gray", f"Nyan Anime Toolkit - Add a job")}')
+        print(f'{colorize("gray", f"Comfy - Add a job")}')
         print("1) Complete series (transcodes, creates a torrent and uploads an entire series)")
         print("2) New episodes (trancodes and uploads new episodes)")
         print("3) Only download")
@@ -54,8 +54,8 @@ def printMainUI(dashboard):
 
         if selection == "1":
             system("clear")
-            print(f'{colorize("gray", f"Nyan Anime Toolkit - Complete series")}')
-            opt_id = input("> Anime ID? (ID from anilist.co): ")
+            print(f'{colorize("gray", f"Comfy - Complete series")}')
+            opt_id = input("> Show ID? (ID from anilist.co): ")
             jobs = []
 
             selection = input("> Download torrent? [n]: ")
@@ -78,7 +78,7 @@ def printMainUI(dashboard):
             selection = input("> Process extra data now? [n]: ")
             selection = "n" if selection == "" else selection
             if selection == "y":
-                opt_mal_id = input("> Anime ID? (ID from myanimelist.net): ")
+                opt_mal_id = input("> Show ID? (ID from myanimelist.net): ")
                 stepExtra(opt_id, opt_mal_id)
             
             jobs.extend(stepTranscode(dashboard, opt_id))
@@ -87,8 +87,8 @@ def printMainUI(dashboard):
             dashboard.addJobCollection(JobCollection(f"Complete series job for '{opt_id}'", jobs))
         elif selection == "2":
             system("clear")
-            print(f'{colorize("gray", f"Nyan Anime Toolkit - New episodes")}')
-            opt_id = input("> Anime ID? (ID from anilist.co): ")
+            print(f'{colorize("gray", f"Comfy - New episodes")}')
+            opt_id = input("> Show ID? (ID from anilist.co): ")
             opt_i = input("> Episode index? [0]: ")
             opt_i = 0 if opt_i == "" else int(opt_i)
             jobs = []
@@ -110,8 +110,8 @@ def printMainUI(dashboard):
             dashboard.addJobCollection(JobCollection(f"New episodes job for '{opt_id}'", jobs))
         elif selection == "3":
             system("clear")
-            print(f'{colorize("gray", f"Nyan Anime Toolkit - Only download")}')
-            opt_id = input("> Anime ID? (ID from anilist.co): ")
+            print(f'{colorize("gray", f"Comfy - Only download")}')
+            opt_id = input("> Show ID? (ID from anilist.co): ")
             opt_magnet = ""
             if not path.exists(f"{dashboard.fileSystem.basePath}/torrents/{opt_id}/link.conf"):
                 opt_magnet = input("> Magnet link?: ")
@@ -121,31 +121,31 @@ def printMainUI(dashboard):
             dashboard.addJobCollection(JobCollection(f"Only download job for '{opt_id}'", [DownloadJob(dashboard, opt_id, None, opt_magnet)]))
         elif selection == "4":
             system("clear")
-            print(f'{colorize("gray", f"Nyan Anime Toolkit - Only transcode")}')
-            opt_id = input("> Anime ID? (ID from anilist.co): ")
+            print(f'{colorize("gray", f"Comfy - Only transcode")}')
+            opt_id = input("> Show ID? (ID from anilist.co): ")
             stepSelect(dashboard, opt_id)
             dashboard.addJobCollection(JobCollection(f"Only transcode job for '{opt_id}'", stepTranscode(dashboard, opt_id)))
         elif selection == "5":
             system("clear")
-            print(f'{colorize("gray", f"Nyan Anime Toolkit - Only transcode")}')
-            opt_id = input("> Anime ID? (ID from anilist.co): ")
+            print(f'{colorize("gray", f"Comfy - Only transcode")}')
+            opt_id = input("> Show ID? (ID from anilist.co): ")
             opt_i = input("> Episode index? [0]: ")
             opt_i = 0 if opt_i == "" else int(opt_i)
             stepSelect(dashboard, opt_id)
             dashboard.addJobCollection(JobCollection(f"Only transcode job for '{opt_id}'", stepTranscode(dashboard, opt_id, opt_i)))
         elif selection == "6":
             system("clear")
-            print(f'{colorize("gray", f"Nyan Anime Toolkit - Only torrent")}')
-            opt_id = input("> Anime ID? (ID from anilist.co): ")
+            print(f'{colorize("gray", f"Comfy - Only torrent")}')
+            opt_id = input("> Show ID? (ID from anilist.co): ")
             dashboard.addJobCollection(JobCollection(f"Only torrent job for '{opt_id}'", [TorrentJob(dashboard, opt_id)]))
         elif selection == "7":
             system("clear")
-            print(f'{colorize("gray", f"Nyan Anime Toolkit - Only upload")}')
-            opt_id = input("> Anime ID? (ID from anilist.co): ")
+            print(f'{colorize("gray", f"Comfy - Only upload")}')
+            opt_id = input("> Show ID? (ID from anilist.co): ")
             dashboard.addJobCollection(JobCollection(f"Only upload job for '{opt_id}'", [stepUpload(dashboard, opt_id)]))
     elif selection == "3":
         system("clear")
-        print(f'{colorize("gray", f"Nyan Anime Toolkit - Other")}')
+        print(f'{colorize("gray", f"Comfy - Other")}')
         print("1) Add complete series data")
         print("2) Add new episodes data")
         print("3) Load previous jobs")
@@ -156,22 +156,22 @@ def printMainUI(dashboard):
 
         if selection == "1":
             system("clear")
-            print(f'{colorize("gray", f"Nyan Anime Toolkit - Add complete series data")}')
-            opt_id = input("> Anime ID? (ID from anilist.co): ")
-            opt_mal_id = input("> Anime ID? (ID from myanimelist.net): ")
+            print(f'{colorize("gray", f"Comfy - Add complete series data")}')
+            opt_id = input("> Show ID? (ID from anilist.co): ")
+            opt_mal_id = input("> Show ID? (ID from myanimelist.net): ")
             stepExtra(opt_id, opt_mal_id)
         elif selection == "2":
             system("clear")
-            print(f'{colorize("gray", f"Nyan Anime Toolkit - Add new episodes data")}')
-            opt_id = input("> Anime ID? (ID from anilist.co): ")
-            opt_mal_id = input("> Anime ID? (ID from myanimelist.net): ")
+            print(f'{colorize("gray", f"Comfy - Add new episodes data")}')
+            opt_id = input("> Show ID? (ID from anilist.co): ")
+            opt_mal_id = input("> Show ID? (ID from myanimelist.net): ")
             stepExtra(opt_id, opt_mal_id, True)
         elif selection == "3":
             dashboard.loadJobs()
         elif selection == "4":
             system("clear")
-            print(f'{colorize("gray", f"Nyan Anime Toolkit - Merge SQL scripts")}')
-            opt_id = input("> Anime ID? (ID from anilist.co): ")
+            print(f'{colorize("gray", f"Comfy - Merge SQL scripts")}')
+            opt_id = input("> Show ID? (ID from anilist.co): ")
 
             mergeText = ""
             for root, _, files in os.walk(f"{dashboard.fileSystem.basePath}/misc/{opt_id}"):
@@ -185,7 +185,7 @@ def printMainUI(dashboard):
                 file.write(mergeText)
     elif selection == "4":
         system("clear")
-        print(f'{colorize("gray", f"Nyan Anime Toolkit - RSS")}')
+        print(f'{colorize("gray", f"Comfy - RSS")}')
         print("1) Reload RSS config")
         print("2) List pending jobs")
         print("3) Create pending jobs")

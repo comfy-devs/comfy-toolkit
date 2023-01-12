@@ -3,15 +3,15 @@ from util.general import colorize
 from util.api import fetchAnilist, fetchMAL
 
 def downloadPoster(anilistID, posterUrl):
-    system(f"wget -O /usr/src/nyananime/processed/{anilistID}/poster_in {posterUrl} > /dev/null")
-    system(f"convert /usr/src/nyananime/processed/{anilistID}/poster_in /usr/src/nyananime/processed/{anilistID}/poster.jpg")
-    system(f"cwebp -quiet -q 90 /usr/src/nyananime/processed/{anilistID}/poster_in -o /usr/src/nyananime/processed/{anilistID}/poster.webp")
-    system(f"rm /usr/src/nyananime/processed/{anilistID}/poster_in")
+    system(f"wget -O /usr/src/comfy/processed/{anilistID}/poster_in {posterUrl} > /dev/null")
+    system(f"convert /usr/src/comfy/processed/{anilistID}/poster_in /usr/src/comfy/processed/{anilistID}/poster.jpg")
+    system(f"cwebp -quiet -q 90 /usr/src/comfy/processed/{anilistID}/poster_in -o /usr/src/comfy/processed/{anilistID}/poster.webp")
+    system(f"rm /usr/src/comfy/processed/{anilistID}/poster_in")
 
 def stepExtraAnime(anilistID, media, mediaMAL):
     media["title"]["romaji"] = media["title"]["romaji"].replace('\'', '\\\'')
     media["description"] = media["description"].replace('\'', '\\\'')
-    print(f'''INSERT INTO animes (id, title, synopsis, episodes, type, status, genres, tags, rating, `group`, season, presets, location, timestamp)
+    print(f'''INSERT INTO shows (id, title, synopsis, episodes, type, status, genres, tags, rating, `group`, season, presets, location, timestamp)
 VALUES ('{anilistID}', '{media["title"]["romaji"]}', '{media["description"]}', {media["episodes"]}, {media["format"]}, {media["status"]}, {media["genres"]}, 1
 , 0, NULL, NULL, 4, 0, {mediaMAL['timestamp']});\n''')
 
@@ -28,10 +28,10 @@ VALUES ('{anilistID}', '{media["title"]["romaji"]}', '{media["description"]}', {
         animeType = media["format"] if animeType == "" else animeType
         animeStatus = input(f"> Anime status? [{colorize('gray', media['status'])}]: ")
         animeStatus = media["status"] if animeStatus == "" else animeStatus
-        animeGenres = input(f"> Anime genres? [{colorize('gray', media['genres'])}]: ")
-        animeGenres = media["genres"] if animeGenres == "" else animeGenres
-        animeTags = input(f"> Anime tags? [{colorize('gray', '1')}]: ")
-        animeTags = '1' if animeTags == "" else animeTags
+        ShowGenres = input(f"> Anime genres? [{colorize('gray', media['genres'])}]: ")
+        ShowGenres = media["genres"] if ShowGenres == "" else ShowGenres
+        ShowTags = input(f"> Anime tags? [{colorize('gray', '1')}]: ")
+        ShowTags = '1' if ShowTags == "" else ShowTags
         animeRating = input(f"> Anime rating? [{colorize('gray', '0')}]: ")
         animeRating = '0' if animeRating == "" else animeRating
         animeGroup = input(f"> Anime group? [{colorize('gray', 'NULL')}]: ")
@@ -45,8 +45,8 @@ VALUES ('{anilistID}', '{media["title"]["romaji"]}', '{media["description"]}', {
         animeTimestamp = input(f"> Anime timestamp? [{colorize('gray', mediaMAL['timestamp'])} (episode {colorize('gray', mediaMAL['_lastEpisode'])})]: ")
         animeTimestamp = mediaMAL['timestamp'] if animeTimestamp == "" else animeTimestamp
         
-        print(f'''INSERT INTO animes (id, title, synopsis, episodes, type, status, genres, tags, rating, `group`, season, presets, location, timestamp)
-    VALUES ('{anilistID}', '{animeTitle}', '{media["description"]}', {animeEpisodeCount}, {animeType}, {animeStatus}, {animeGenres}, {animeTags}
+        print(f'''INSERT INTO shows (id, title, synopsis, episodes, type, status, genres, tags, rating, `group`, season, presets, location, timestamp)
+    VALUES ('{anilistID}', '{animeTitle}', '{media["description"]}', {animeEpisodeCount}, {animeType}, {animeStatus}, {ShowGenres}, {ShowTags}
     , {animeRating}, {animeGroup}, {animeSeason}, {animePresets}, {animeLocation}, {animeTimestamp});\n''')
         input("Press enter...")
 
@@ -54,7 +54,7 @@ def stepExtraEpisodes(anilistID, start, length, mediaMAL=None):
     if mediaMAL != None and len(mediaMAL["episodes"]) == (length - start):
         for i in range(length):
             episodeTitle = mediaMAL['episodes'][i].replace('\'', '\\\'')
-            print(f"INSERT INTO episodes (id, pos, anime, title) VALUES ('{anilistID}-{start+i}', {start+i}, {anilistID}, '{episodeTitle}');")
+            print(f"INSERT INTO episodes (id, pos, `show`, title) VALUES ('{anilistID}-{start+i}', {start+i}, {anilistID}, '{episodeTitle}');")
         print("")
 
         selection = input("> Edit? [n]: ")
@@ -66,7 +66,7 @@ def stepExtraEpisodes(anilistID, start, length, mediaMAL=None):
     for i in range(length):
         episodeTitle = input(f"> Episode {colorize('gray', start+i+1)} title?: ")
         episodeTitle = episodeTitle.replace('\'', '\\\'')
-        result += f"INSERT INTO episodes (id, pos, anime, title) VALUES ('{anilistID}-{start+i}', {start+i}, {anilistID}, '{episodeTitle}');\n"
+        result += f"INSERT INTO episodes (id, pos, `show`, title) VALUES ('{anilistID}-{start+i}', {start+i}, {anilistID}, '{episodeTitle}');\n"
 
     print(result)
     input("Press enter...")
@@ -83,7 +83,7 @@ def stepExtra(anilistID, malID, partial = False):
             posterUrl = media["coverImage"]["extraLarge"] if posterUrl == "" else posterUrl
             downloadPoster(anilistID, posterUrl)
         
-        selection = input("> Generate SQL query for anime? (y/n) [y]: ")
+        selection = input("> Generate SQL query for show? (y/n) [y]: ")
         selection = "y" if selection == "" else selection
         if selection == "y":
             stepExtraAnime(anilistID, media, mediaMAL)

@@ -52,7 +52,7 @@ months = {
     "Dec": 12
 }
 
-def fetchAnilist(animeID):
+def fetchAnilist(showID):
     query= '''
     query ($id: Int) {
         Media (id: $id, type: ANIME) {
@@ -73,7 +73,7 @@ def fetchAnilist(animeID):
         }
     }
     '''
-    response = requests.post("https://graphql.anilist.co", json={ "query": query, "variables": { "id": animeID } })
+    response = requests.post("https://graphql.anilist.co", json={ "query": query, "variables": { "id": showID } })
     media = json.loads(response.text)["data"]["Media"]
 
     media["episodes"] = 0 if media["episodes"] == None else media["episodes"]
@@ -83,8 +83,8 @@ def fetchAnilist(animeID):
 
     return media
 
-def fetchMAL(animeID, episodes):
-    r = requests.get(f"https://myanimelist.net/anime/{animeID}")
+def fetchMAL(showID, episodes):
+    r = requests.get(f"https://myanimelist.net/anime/{showID}")
     content = BeautifulSoup(r.content, 'html.parser')
     elements = content.find_all('div', class_='spaceit_pad')
 

@@ -1,7 +1,7 @@
 import os
 import feedparser, re, subprocess
 from os import system, path
-from util.fs import NyanFilesystem
+from util.fs import ComfyFilesystem
 from util.general import setInterval, colorize
 from ui.main import printMainUI
 from ui.jobs import printJobsUI
@@ -13,7 +13,7 @@ from job.collection import JobCollection
 class Dashboard:
     def __init__(self):
         self.currentPath = os.path.dirname(os.path.realpath(__file__))
-        self.fileSystem = NyanFilesystem()
+        self.fileSystem = ComfyFilesystem()
         self.jobCollections = []
         self.jobsUIEnabled = False
         self.jobsUIShowCompleted = True
@@ -65,12 +65,12 @@ class Dashboard:
                     jobCollection.currentJob.start()
                     currentJobTypes.append(jobType)
 
-    def changeJobStatus(self, animeID, episodeIndex, status):
+    def changeJobStatus(self, showID, episodeIndex, status):
         lines = []
-        with open(f"{self.fileSystem.basePath}/jobs/{animeID}/{episodeIndex}.conf") as f:
+        with open(f"{self.fileSystem.basePath}/jobs/{showID}/{episodeIndex}.conf") as f:
             lines = f.readlines()
         lines[3] = status
-        with open(f"{self.fileSystem.basePath}/jobs/{animeID}/{episodeIndex}.conf", "w") as f:
+        with open(f"{self.fileSystem.basePath}/jobs/{showID}/{episodeIndex}.conf", "w") as f:
             f.writelines(lines)
 
     def loadJobs(self):
@@ -79,24 +79,24 @@ class Dashboard:
             if entry == "": continue
             with open(f"{self.fileSystem.basePath}/jobs/{entry}") as f:
                 jobLines = f.readlines()
-                animeID = jobLines[0].strip()
+                showID = jobLines[0].strip()
                 episodeIndex = int(jobLines[1].strip())
                 torrentLink = jobLines[2].strip()
                 jobStatus = jobLines[3].strip()
                 if jobStatus != "finished":
-                    print(f"Adding a job (episode {colorize('gray', episodeIndex + 1)} of {colorize('gray', animeID)}, source: {colorize('gray', torrentLink)})")
-                    collection = JobCollection(f"New episodes job for '{animeID}/{episodeIndex}'", [])
+                    print(f"Adding a job (episode {colorize('gray', episodeIndex + 1)} of {colorize('gray', showID)}, source: {colorize('gray', torrentLink)})")
+                    collection = JobCollection(f"New episodes job for '{showID}/{episodeIndex}'", [])
                     if jobStatus == "download":
-                        job = DownloadJob(dashboard, animeID, episodeIndex, torrentLink)
-                        job.jobOnComplete = lambda: self.changeJobStatus(animeID, episodeIndex, "transcode")  # type: ignore
+                        job = DownloadJob(dashboard, showID, episodeIndex, torrentLink)
+                        job.jobOnComplete = lambda: self.changeJobStatus(showID, episodeIndex, "transcode")  # type: ignore
                         collection.jobs.append(job)
                     if jobStatus == "download" or jobStatus == "transcode":
-                        job = TranscodingCreateJob(dashboard, animeID, episodeIndex, episodeIndex, collection)
-                        job.jobOnComplete = lambda: self.changeJobStatus(animeID, episodeIndex, "upload")  # type: ignore
+                        job = TranscodingCreateJob(dashboard, showID, episodeIndex, episodeIndex, collection)
+                        job.jobOnComplete = lambda: self.changeJobStatus(showID, episodeIndex, "upload")  # type: ignore
                         collection.jobs.append(job)
                     if jobStatus == "download" or jobStatus == "transcode" or jobStatus == "upload":
-                        job = UploadJob(dashboard, animeID, episodeIndex)
-                        job.jobOnComplete = lambda: self.changeJobStatus(animeID, episodeIndex, "finished")  # type: ignore
+                        job = UploadJob(dashboard, showID, episodeIndex)
+                        job.jobOnComplete = lambda: self.changeJobStatus(showID, episodeIndex, "finished")  # type: ignore
                         collection.jobs.append(job)
                     self.addJobCollection(collection)
 
@@ -131,7 +131,7 @@ class Dashboard:
                     rssFilter = self.rssFilters[k]
                     match = re.search(rssFilter["regex"], entry.title)
                     if match != None:
-                        # TODO: Support stupid animes which tag with floating points
+                        # TODO: Support stupid shows which tag with floating points
                         episodeIndex = int(match.group(1)) - 1
                         if not path.exists(f"{self.fileSystem.basePath}/jobs/{rssFilter['id']}/{episodeIndex}.conf"):
                             jobs.append(f"-> Episode {colorize('gray', episodeIndex + 1)} of {colorize('gray', rssFilter['id'])} (link: {colorize('gray', entry.link)})...")
@@ -148,9 +148,9 @@ class Dashboard:
         setInterval(1, self.asyncRun)
 
         print("Importing SSH keys...")
-        if path.exists(f"/usr/src/nyanime/ssh/id_rsa"):
+        if path.exists(f"/usr/src/comfy/ssh/id_rsa"):
             system("eval $(ssh-agent)")
-            system("ssh-add /usr/src/nyanime/ssh/id_rsa")
+            system("ssh-add /usr/src/comfy/ssh/id_rsa")
         
         print("Creating initial directories...")
         system(f"mkdir -p {self.fileSystem.basePath}/source")

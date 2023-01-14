@@ -7,7 +7,7 @@ from os import system, path
 from job.job import Job
 
 class TranscodingJob(Job):
-    def __init__(self, dashboard, jobShowID, jobEpisodeIndex, jobSrcPath, jobCodec, jobVideoOptions):
+    def __init__(self, dashboard, jobShowID, jobEpisodeIndex, jobSrcPath, jobCodec, jobTune, jobVideoOptions):
         Job.__init__(self, dashboard, "transcoding")
         self.jobShowID = jobShowID
         self.jobEpisodeIndex = jobEpisodeIndex
@@ -16,6 +16,7 @@ class TranscodingJob(Job):
         self.jobSrcFramerate = 0
         self.jobSrcSize = 0
         self.jobCodec = jobCodec
+        self.jobTune = jobTune
         self.jobCodecEnum = 0 if jobCodec == "x264" else 1
         self.jobCodecEpisodeName = f'episode_{self.jobCodec}.{"mp4" if self.jobCodec == "x264" else "webm"}'
         self.jobVideoOptions = jobVideoOptions
@@ -89,6 +90,7 @@ class TranscodingJob(Job):
                 subtitleStreamLanguage = subtitleStreamLanguage[(subtitleStreamLanguage.index(",") + 1):]
             else:
                 subtitleStreamLanguage = "eng"
+            # TODO: this no work
             if subtitleStreamLanguage in subtitleTracks:
                 continue
             subtitleStreamCodec = subprocess.getoutput(f'ffprobe -v error -select_streams s:{i} -show_entries stream=codec_name -of csv=p=0 "{self.dashboard.fileSystem.getFile(self.jobSrcPath)}"')
@@ -109,6 +111,7 @@ class TranscodingJob(Job):
                 audioStreamLanguage = audioStreamLanguage[(audioStreamLanguage.index(",") + 1):]
             else:
                 audioStreamLanguage = "jpn"
+            # TODO: this no work
             if audioStreamLanguage in audioTracks:
                 continue
             audioTracks.append({ "pos": i, "lang": audioStreamLanguage })
@@ -125,8 +128,7 @@ class TranscodingJob(Job):
         }
 
     # TODO: Add a check for PGS subtitles
-    # TODO: Add a check for commentary second audio stream
-    # TODO: Add a way to decide which one from 2 same language subtitles to use (bigger == the right one?)
+    # TODO: Add a way to decide the corrent subtitle stream (so songs don't override main track)
     def run(self):
         DEVNULL = open(os.devnull, 'wb')
         system(f'mkdir -p "{self.dashboard.fileSystem.mountPath}/processed/{self.jobPath}"')
@@ -138,7 +140,7 @@ class TranscodingJob(Job):
         self.startSection(f"Transcoding '{self.jobPath}' ({self.jobCodec})...")
         if self.jobCodec == "x264" and not path.exists(f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/episode_x264.mp4"):
             audioDetails = self.getAudioDetails() if audioDetails == None else audioDetails
-            args = ["../scripts/ffmpeg-x264-medium.sh", self.dashboard.fileSystem.getFile(self.jobSrcPath), f"{self.dashboard.fileSystem.mountPath}/processed/{self.jobPath}", "animation", f"{round(self.jobSrcFramerate)}", audioDetails["mappings"]]
+            args = ["../scripts/ffmpeg-x264-medium.sh", self.dashboard.fileSystem.getFile(self.jobSrcPath), f"{self.dashboard.fileSystem.mountPath}/processed/{self.jobPath}", self.jobTune, f"{round(self.jobSrcFramerate)}", audioDetails["mappings"]]
             self.jobSubprocess = subprocess.Popen(args, stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
         elif self.jobCodec == "vp9" and not path.exists(f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/episode_vp9.webm"):
             audioDetails = self.getAudioDetails() if audioDetails == None else audioDetails
@@ -167,7 +169,7 @@ class TranscodingJob(Job):
                 audioStream = audioDetails["tracks"][i]
                 audioStreamLanguage = audioStream["lang"]
                 if not path.exists(f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/hls/audio/0/{audioStreamLanguage}.m3u8"):
-                    self.startSection(f"Generating audio HLS streams ({audioStreamLanguage}, {i}/{audioStreams}) for '{self.jobPath}'...")
+                    self.startSection(f"Generating audio HLS streams ({audioStreamLanguage}, {i+1}/{audioStreams}) for '{self.jobPath}'...")
                     self.jobSubprocess = subprocess.Popen(["../scripts/ffmpeg-audio-hls.sh", self.dashboard.fileSystem.getFile(f"processed/{self.jobPath}/episode_x264.mp4"), f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}", str(audioStream["pos"]), audioStreamLanguage], stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
                     self.runProgress()
                     self.endSection()
@@ -188,7 +190,7 @@ class TranscodingJob(Job):
                 subtitleStreamLanguage = subtitleStream["lang"]
                 subtitleStreamCodec = subtitleStream["codec"]
                 if not path.exists(f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/subs/{subtitleStreamLanguage}.vtt"):
-                    self.startSection(f"Extracting subtitles ({subtitleStreamLanguage}, {i}/{subtitleStreams}) from '{self.jobPath}'...")
+                    self.startSection(f"Extracting subtitles ({subtitleStreamLanguage}, {i+1}/{subtitleStreams}) from '{self.jobPath}'...")
                     self.jobSubprocess = subprocess.Popen(["../scripts/ffmpeg-subs.sh", self.dashboard.fileSystem.getFile(self.jobSrcPath), f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/subs/original/{subtitleStreamLanguage}.{subtitleStreamCodec}", f"{i}"], stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
                     self.runProgress()
                     self.jobSubprocess = subprocess.Popen(["../scripts/ffmpeg-subs.sh", self.dashboard.fileSystem.getFile(self.jobSrcPath), f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/subs/{subtitleStreamLanguage}.vtt", f"{i}"], stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)

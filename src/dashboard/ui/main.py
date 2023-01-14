@@ -2,7 +2,8 @@ import subprocess
 import os
 from os import system, path
 from util.general import colorize
-from step.extra import stepExtra, downloadPoster
+from step.extra_anime import stepExtraShowAnime
+from step.extra_other import stepExtraShowOther
 from step.select import stepSelect
 from step.transcode import stepTranscode
 from step.upload import stepUpload
@@ -10,6 +11,7 @@ from job.types.download import DownloadJob
 from job.types.torrent import TorrentJob
 from job.collection import JobCollection
 from util.api import fetchAnilist
+from util.extra import downloadPoster
 
 def printJobsUISelector(dashboard):
     dashboard.jobsUIEnabled = True
@@ -55,7 +57,7 @@ def printMainUI(dashboard):
         if selection == "1":
             system("clear")
             print(f'{colorize("gray", f"Comfy - Complete series")}')
-            opt_id = input("> Show ID? (ID from anilist.co): ")
+            opt_id = input("> Show ID?: ")
             jobs = []
 
             selection = input("> Download torrent? [n]: ")
@@ -78,8 +80,16 @@ def printMainUI(dashboard):
             selection = input("> Process extra data now? [n]: ")
             selection = "n" if selection == "" else selection
             if selection == "y":
-                opt_mal_id = input("> Show ID? (ID from myanimelist.net): ")
-                stepExtra(opt_id, opt_mal_id)
+                opt_type = input("> Show type? (anime/other) [anime]: ")
+                opt_type = "anime" if opt_type == "" else opt_type
+                if opt_type == "anime":
+                    opt_ani_id = input(f"> Show ID? (ID from anilist.co) [{opt_id}]: ")
+                    opt_ani_id = opt_id if opt_ani_id == "" else opt_ani_id
+                    opt_mal_id = input(f"> Show ID? (ID from myanimelist.net) [{opt_id}]: ")
+                    opt_mal_id = opt_id if opt_mal_id == "" else opt_mal_id
+                    stepExtraShowAnime(opt_id, opt_mal_id)
+                else:
+                    stepExtraShowOther(opt_id)
             
             jobs.extend(stepTranscode(dashboard, opt_id))
             jobs.append(TorrentJob(dashboard, opt_id))
@@ -88,7 +98,7 @@ def printMainUI(dashboard):
         elif selection == "2":
             system("clear")
             print(f'{colorize("gray", f"Comfy - New episodes")}')
-            opt_id = input("> Show ID? (ID from anilist.co): ")
+            opt_id = input("> Show ID?: ")
             opt_i = input("> Episode index? [0]: ")
             opt_i = 0 if opt_i == "" else int(opt_i)
             jobs = []
@@ -111,7 +121,7 @@ def printMainUI(dashboard):
         elif selection == "3":
             system("clear")
             print(f'{colorize("gray", f"Comfy - Only download")}')
-            opt_id = input("> Show ID? (ID from anilist.co): ")
+            opt_id = input("> Show ID?: ")
             opt_magnet = ""
             if not path.exists(f"{dashboard.fileSystem.basePath}/torrents/{opt_id}/link.conf"):
                 opt_magnet = input("> Magnet link?: ")
@@ -122,13 +132,13 @@ def printMainUI(dashboard):
         elif selection == "4":
             system("clear")
             print(f'{colorize("gray", f"Comfy - Only transcode")}')
-            opt_id = input("> Show ID? (ID from anilist.co): ")
+            opt_id = input("> Show ID?: ")
             stepSelect(dashboard, opt_id)
             dashboard.addJobCollection(JobCollection(f"Only transcode job for '{opt_id}'", stepTranscode(dashboard, opt_id)))
         elif selection == "5":
             system("clear")
             print(f'{colorize("gray", f"Comfy - Only transcode")}')
-            opt_id = input("> Show ID? (ID from anilist.co): ")
+            opt_id = input("> Show ID?: ")
             opt_i = input("> Episode index? [0]: ")
             opt_i = 0 if opt_i == "" else int(opt_i)
             stepSelect(dashboard, opt_id)
@@ -136,12 +146,12 @@ def printMainUI(dashboard):
         elif selection == "6":
             system("clear")
             print(f'{colorize("gray", f"Comfy - Only torrent")}')
-            opt_id = input("> Show ID? (ID from anilist.co): ")
+            opt_id = input("> Show ID?: ")
             dashboard.addJobCollection(JobCollection(f"Only torrent job for '{opt_id}'", [TorrentJob(dashboard, opt_id)]))
         elif selection == "7":
             system("clear")
             print(f'{colorize("gray", f"Comfy - Only upload")}')
-            opt_id = input("> Show ID? (ID from anilist.co): ")
+            opt_id = input("> Show ID?: ")
             dashboard.addJobCollection(JobCollection(f"Only upload job for '{opt_id}'", [stepUpload(dashboard, opt_id)]))
     elif selection == "3":
         system("clear")
@@ -157,21 +167,37 @@ def printMainUI(dashboard):
         if selection == "1":
             system("clear")
             print(f'{colorize("gray", f"Comfy - Add complete series data")}')
-            opt_id = input("> Show ID? (ID from anilist.co): ")
-            opt_mal_id = input("> Show ID? (ID from myanimelist.net): ")
-            stepExtra(opt_id, opt_mal_id)
+            opt_id = input("> Show ID?: ")
+            opt_type = input("> Show type? (anime/other) [anime]: ")
+            opt_type = "anime" if opt_type == "" else opt_type
+            if opt_type == "anime":
+                opt_ani_id = input(f"> Show ID? (ID from anilist.co) [{opt_id}]: ")
+                opt_ani_id = opt_id if opt_ani_id == "" else opt_ani_id
+                opt_mal_id = input(f"> Show ID? (ID from myanimelist.net) [{opt_id}]: ")
+                opt_mal_id = opt_id if opt_mal_id == "" else opt_mal_id
+                stepExtraShowAnime(opt_id, opt_mal_id)
+            else:
+                stepExtraShowOther(opt_id)
         elif selection == "2":
             system("clear")
             print(f'{colorize("gray", f"Comfy - Add new episodes data")}')
-            opt_id = input("> Show ID? (ID from anilist.co): ")
-            opt_mal_id = input("> Show ID? (ID from myanimelist.net): ")
-            stepExtra(opt_id, opt_mal_id, True)
+            opt_id = input("> Show ID?: ")
+            opt_type = input("> Show type? (anime/other) [anime]: ")
+            opt_type = "anime" if opt_type == "" else opt_type
+            if opt_type == "anime":
+                opt_ani_id = input(f"> Show ID? (ID from anilist.co) [{opt_id}]: ")
+                opt_ani_id = opt_id if opt_ani_id == "" else opt_ani_id
+                opt_mal_id = input(f"> Show ID? (ID from myanimelist.net) [{opt_id}]: ")
+                opt_mal_id = opt_id if opt_mal_id == "" else opt_mal_id
+                stepExtraShowAnime(opt_id, opt_mal_id, True)
+            else:
+                stepExtraShowOther(opt_id)
         elif selection == "3":
             dashboard.loadJobs()
         elif selection == "4":
             system("clear")
             print(f'{colorize("gray", f"Comfy - Merge SQL scripts")}')
-            opt_id = input("> Show ID? (ID from anilist.co): ")
+            opt_id = input("> Show ID?: ")
 
             mergeText = ""
             for root, _, files in os.walk(f"{dashboard.fileSystem.basePath}/misc/{opt_id}"):

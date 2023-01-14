@@ -5,6 +5,8 @@ from job.types.transcoding import TranscodingJob
 def stepTranscode(dashboard, opt_id, i=None):
     opt_codec = input("> Encoding codec? (x264/vp9) [x264]: ")
     opt_codec = "x264" if opt_codec == "" else opt_codec
+    opt_tune = input("> Encoding tune? (animation/film) [animation]: ")
+    opt_tune = "animation" if opt_tune == "" else opt_tune
 
     opt_min_bitrate = ""
     opt_bitrate = ""
@@ -43,11 +45,11 @@ def stepTranscode(dashboard, opt_id, i=None):
     entries = subprocess.getoutput(f'find {dashboard.fileSystem.basePath}/source/{opt_id}/ -type f -name "*.mkv" -printf "%P\\n" | sort').split("\n")
     if i != None:
         entry = entries[i] if len(entries) > 1 else entries[0]
-        jobs.append(TranscodingJob(dashboard, opt_id, i, f"source/{opt_id}/{entry}", opt_codec, [opt_min_bitrate, opt_bitrate, opt_max_bitrate]))
+        jobs.append(TranscodingJob(dashboard, opt_id, i, f"source/{opt_id}/{entry}", opt_codec, opt_tune, [opt_min_bitrate, opt_bitrate, opt_max_bitrate]))
     else:
         i = 0
         for entry in entries:
-            jobs.append(TranscodingJob(dashboard, opt_id, i, f"source/{opt_id}/{entry}", opt_codec, [opt_min_bitrate, opt_bitrate, opt_max_bitrate]))
+            jobs.append(TranscodingJob(dashboard, opt_id, i, f"source/{opt_id}/{entry}", opt_codec, opt_tune, [opt_min_bitrate, opt_bitrate, opt_max_bitrate]))
             i += 1
     
     return jobs

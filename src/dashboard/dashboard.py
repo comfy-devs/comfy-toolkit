@@ -91,7 +91,7 @@ class Dashboard:
                         job.jobOnComplete = lambda: self.changeJobStatus(showID, episodeIndex, "transcode")  # type: ignore
                         collection.jobs.append(job)
                     if jobStatus == "download" or jobStatus == "transcode":
-                        job = TranscodingCreateJob(dashboard, showID, episodeIndex, episodeIndex, collection)
+                        job = TranscodingCreateJob(dashboard, showID, episodeIndex, episodeIndex, collection, "animation")
                         job.jobOnComplete = lambda: self.changeJobStatus(showID, episodeIndex, "upload")  # type: ignore
                         collection.jobs.append(job)
                     if jobStatus == "download" or jobStatus == "transcode" or jobStatus == "upload":

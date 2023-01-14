@@ -3,4 +3,4 @@
 # Almost no quality improving options enabled, medium preset
 # Arguments: 1 (source .mkv file), 2 (destination folder), 3 (tune), 4 (audio mappings)
 
-ffmpeg -i "$1" -loglevel error -stats -pix_fmt yuv420p -vcodec libx264 -acodec libfdk_aac -map 0:v:0 $4 -map -0:s -map -0:d -map -0:t -vbr 5 -movflags +faststart -preset medium -tune $3 "$2/episode_x264.mp4" 
+ffmpeg -i "$1" -loglevel error -stats -pix_fmt yuv420p -vcodec libx264 -acodec libfdk_aac -map -0 -map 0:v:0 $4 -vbr 5 -movflags +faststart -preset medium -tune $3 "$2/episode_x264.mp4" 

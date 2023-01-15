@@ -26,8 +26,8 @@ def stepExtraOther(showID):
     showTimestamp = input(f"> Show timestamp? [{colorize('gray', 'NULL')}]: ")
     showTimestamp = 'NULL' if showTimestamp == "" else showTimestamp
     
-    print(f'''INSERT INTO shows (id, title, synopsis, episodes, type, status, genres, tags, rating, `group`, season, presets, location, timestamp)
-VALUES ('{showID}', '{showTitle}', 'somebody forgor to fill this out.', {showEpisodeCount}, 0, {showStatus}, {showGenres}, {showTags}
+    print(f'''INSERT INTO shows (id, title, altTitles, synopsis, episodes, type, status, genres, tags, rating, `group`, season, presets, location, timestamp)
+VALUES ('{showID}', '{showTitle}', '', 'somebody forgor to fill this out.', {showEpisodeCount}, 0, {showStatus}, {showGenres}, {showTags}
 , {showRating}, {showGroup}, {showSeason}, {showPresets}, {showLocation}, {showTimestamp});\n''')
     input("Press enter...")
 

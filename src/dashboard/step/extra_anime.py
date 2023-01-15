@@ -6,8 +6,8 @@ from util.api import fetchAnilist, fetchMAL
 def stepExtraAnime(showID, media, mediaMAL):
     media["title"]["romaji"] = media["title"]["romaji"].replace('\'', '\\\'')
     media["description"] = media["description"].replace('\'', '\\\'')
-    print(f'''INSERT INTO shows (id, title, synopsis, episodes, type, status, genres, tags, rating, `group`, season, presets, location, timestamp)
-VALUES ('{showID}', '{media["title"]["romaji"]}', '{media["description"]}', {media["episodes"]}, {media["format"]}, {media["status"]}, {media["genres"]}, 1
+    print(f'''INSERT INTO shows (id, title, altTitles, synopsis, episodes, type, status, genres, tags, rating, `group`, season, presets, location, timestamp)
+VALUES ('{showID}', '', '{media["title"]["romaji"]}', '{media["description"]}', {media["episodes"]}, {media["format"]}, {media["status"]}, {media["genres"]}, 1
 , 0, NULL, NULL, 4, 0, {mediaMAL['timestamp']});\n''')
 
     selection = input("> Edit? [n]: ")
@@ -40,8 +40,8 @@ VALUES ('{showID}', '{media["title"]["romaji"]}', '{media["description"]}', {med
         showTimestamp = input(f"> Show timestamp? [{colorize('gray', mediaMAL['timestamp'])} (episode {colorize('gray', mediaMAL['_lastEpisode'])})]: ")
         showTimestamp = mediaMAL['timestamp'] if showTimestamp == "" else showTimestamp
         
-        print(f'''INSERT INTO shows (id, title, synopsis, episodes, type, status, genres, tags, rating, `group`, season, presets, location, timestamp)
-    VALUES ('{showID}', '{showTitle}', '{media["description"]}', {showEpisodeCount}, {animeType}, {showStatus}, {showGenres}, {showTags}
+        print(f'''INSERT INTO shows (id, title, altTitles, synopsis, episodes, type, status, genres, tags, rating, `group`, season, presets, location, timestamp)
+    VALUES ('{showID}', '{showTitle}', '', '{media["description"]}', {showEpisodeCount}, {animeType}, {showStatus}, {showGenres}, {showTags}
     , {showRating}, {showGroup}, {showSeason}, {showPresets}, {showLocation}, {showTimestamp});\n''')
         input("Press enter...")
 

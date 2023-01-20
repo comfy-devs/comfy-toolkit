@@ -90,13 +90,12 @@ class TranscodingJob(Job):
                 subtitleStreamLanguage = subtitleStreamLanguage[(subtitleStreamLanguage.index(",") + 1):]
             else:
                 subtitleStreamLanguage = "eng"
-            # TODO: this no work
-            if subtitleStreamLanguage in subtitleTracks:
-                continue
+            subtitleStreamAlt = any(t["lang"] == subtitleStreamLanguage for t in subtitleTracks)
+            subtitleStreamName = f'{subtitleStreamLanguage}-{i}' if subtitleStreamAlt else subtitleStreamLanguage
             subtitleStreamCodec = subprocess.getoutput(f'ffprobe -v error -select_streams s:{i} -show_entries stream=codec_name -of csv=p=0 "{self.dashboard.fileSystem.getFile(self.jobSrcPath)}"')
             if subtitleStreamCodec == "subrip":
                 subtitleStreamCodec = "srt"
-            subtitleTracks.append({ "pos": i, "lang": subtitleStreamLanguage, "codec": subtitleStreamCodec })
+            subtitleTracks.append({ "pos": i, "alt": subtitleStreamAlt, "lang": subtitleStreamLanguage, "name": subtitleStreamName, "codec": subtitleStreamCodec })
         
         return {
             "tracks": subtitleTracks
@@ -111,12 +110,11 @@ class TranscodingJob(Job):
                 audioStreamLanguage = audioStreamLanguage[(audioStreamLanguage.index(",") + 1):]
             else:
                 audioStreamLanguage = "jpn"
-            # TODO: this no work
-            if audioStreamLanguage in audioTracks:
-                continue
-            audioTracks.append({ "pos": i, "lang": audioStreamLanguage })
+            audioStreamAlt = any(t["lang"] == audioStreamLanguage for t in audioTracks)
+            audioStreamName = f'{audioStreamLanguage}-{i}' if audioStreamAlt else audioStreamLanguage
+            audioTracks.append({ "_pos": i, "pos": i, "alt": audioStreamAlt, "lang": audioStreamLanguage, "name": audioStreamName })
         audioMappings = "-map 0:a"
-        if audioStreams > 1 and audioTracks[0] == "eng":
+        if audioStreams > 1 and audioTracks[0]["lang"] == "eng":
             audioMappings = "-map 0:a:1 -map 0:a:0"
             audioTracks[0]["pos"] = 1
             audioTracks[1]["pos"] = 0
@@ -156,6 +154,11 @@ class TranscodingJob(Job):
             args = ["../scripts/ffmpeg-x264-hls.sh", self.dashboard.fileSystem.getFile(f"processed/{self.jobPath}/episode_x264.mp4"), f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}"]
             self.jobSubprocess = subprocess.Popen(args, stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
             # system(f'rm "{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/episode_x264.mp4"')
+        elif self.jobCodec == "vp9" and not path.exists(f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/hls/vp9/master.m3u8"):
+            system(f'mkdir -p "{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/hls/vp9"')
+            args = ["../scripts/ffmpeg-vp9-hls.sh", self.dashboard.fileSystem.getFile(f"processed/{self.jobPath}/episode_vp9.webm"), f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}"]
+            self.jobSubprocess = subprocess.Popen(args, stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+            # system(f'rm "{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/episode_vp9.webm"')
         self.runProgress()
         self.endSection()
 
@@ -167,10 +170,10 @@ class TranscodingJob(Job):
             audioStreams = len(audioDetails["tracks"])
             for i in range(audioStreams):
                 audioStream = audioDetails["tracks"][i]
-                audioStreamLanguage = audioStream["lang"]
-                if not path.exists(f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/hls/audio/0/{audioStreamLanguage}.m3u8"):
-                    self.startSection(f"Generating audio HLS streams ({audioStreamLanguage}, {i+1}/{audioStreams}) for '{self.jobPath}'...")
-                    self.jobSubprocess = subprocess.Popen(["../scripts/ffmpeg-audio-hls.sh", self.dashboard.fileSystem.getFile(f"processed/{self.jobPath}/episode_x264.mp4"), f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}", str(audioStream["pos"]), audioStreamLanguage], stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+                audioStreamName = audioStream["name"]
+                if not path.exists(f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/hls/audio/0/{audioStreamName}.m3u8"):
+                    self.startSection(f"Generating audio HLS streams ({audioStreamName}, {i+1}/{audioStreams}) for '{self.jobPath}'...")
+                    self.jobSubprocess = subprocess.Popen(["../scripts/ffmpeg-opus-hls.sh", self.dashboard.fileSystem.getFile(self.jobSrcPath), f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}", str(audioStream["_pos"]), audioStreamName], stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
                     self.runProgress()
                     self.endSection()
                 self.jobProgress = round((i / audioStreams) * 100, 2)
@@ -187,21 +190,21 @@ class TranscodingJob(Job):
             subtitleStreams = len(subtitleDetails["tracks"])
             for i in range(subtitleStreams):
                 subtitleStream = subtitleDetails["tracks"][i]
-                subtitleStreamLanguage = subtitleStream["lang"]
+                subtitleStreamName = subtitleStream["name"]
                 subtitleStreamCodec = subtitleStream["codec"]
-                if not path.exists(f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/subs/{subtitleStreamLanguage}.vtt"):
-                    self.startSection(f"Extracting subtitles ({subtitleStreamLanguage}, {i+1}/{subtitleStreams}) from '{self.jobPath}'...")
-                    self.jobSubprocess = subprocess.Popen(["../scripts/ffmpeg-subs.sh", self.dashboard.fileSystem.getFile(self.jobSrcPath), f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/subs/original/{subtitleStreamLanguage}.{subtitleStreamCodec}", f"{i}"], stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+                if not path.exists(f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/subs/{subtitleStreamName}.vtt"):
+                    self.startSection(f"Extracting subtitles ({subtitleStreamName}, {i+1}/{subtitleStreams}) from '{self.jobPath}'...")
+                    self.jobSubprocess = subprocess.Popen(["../scripts/ffmpeg-subs.sh", self.dashboard.fileSystem.getFile(self.jobSrcPath), f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/subs/original/{subtitleStreamName}.{subtitleStreamCodec}", f"{i}"], stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
                     self.runProgress()
-                    self.jobSubprocess = subprocess.Popen(["../scripts/ffmpeg-subs.sh", self.dashboard.fileSystem.getFile(self.jobSrcPath), f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/subs/{subtitleStreamLanguage}.vtt", f"{i}"], stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+                    self.jobSubprocess = subprocess.Popen(["../scripts/ffmpeg-subs.sh", self.dashboard.fileSystem.getFile(self.jobSrcPath), f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/subs/{subtitleStreamName}.vtt", f"{i}"], stdin=DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
                     self.runProgress()
-                    self.jobSubprocess = subprocess.Popen(["../scripts/subs-clean.sh", f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/subs/{subtitleStreamLanguage}.vtt"], stdin=DEVNULL, stdout=DEVNULL, stderr=DEVNULL)
+                    self.jobSubprocess = subprocess.Popen(["../scripts/subs-clean.sh", f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/subs/{subtitleStreamName}.vtt"], stdin=DEVNULL, stdout=DEVNULL, stderr=DEVNULL)
                     self.jobSubprocess.wait()
-                    self.jobSubprocess = subprocess.Popen(["../scripts/subs-clean-ad.sh", f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/subs/{subtitleStreamLanguage}.vtt"], stdin=DEVNULL, stdout=DEVNULL, stderr=DEVNULL)
+                    self.jobSubprocess = subprocess.Popen(["../scripts/subs-clean-ad.sh", f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/subs/{subtitleStreamName}.vtt"], stdin=DEVNULL, stdout=DEVNULL, stderr=DEVNULL)
                     self.jobSubprocess.wait()
                     self.endSection()
-                if not path.exists(f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/hls/subs/{subtitleStreamLanguage}.m3u8"):
-                    self.jobSubprocess = subprocess.Popen(["../scripts/subs-create-hls.sh", f"../../subs/{subtitleStreamLanguage}.vtt", duration, f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/hls/subs/{subtitleStreamLanguage}.m3u8"], stdin=DEVNULL, stdout=DEVNULL, stderr=DEVNULL)
+                if not subtitleStream["alt"] and not path.exists(f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/hls/subs/{subtitleStreamName}.m3u8"):
+                    self.jobSubprocess = subprocess.Popen(["../scripts/subs-create-hls.sh", f"../../subs/{subtitleStreamName}.vtt", duration, f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/hls/subs/{subtitleStreamName}.m3u8"], stdin=DEVNULL, stdout=DEVNULL, stderr=DEVNULL)
                     self.jobSubprocess.wait()
                 self.jobProgress = round((i / subtitleStreams) * 100, 2)
         self.endSection()
@@ -217,7 +220,7 @@ class TranscodingJob(Job):
         
         # Edit master HLS playlist, if applicable
         self.startSection(f"Editing master HLS playlist of '{self.jobPath}'...")
-        if self.jobCodec == "x264" and not os.path.exists(f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/hls/{self.jobCodec}/master_original.m3u8"):
+        if not os.path.exists(f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/hls/{self.jobCodec}/master_original.m3u8"):
             masterLines = []
             with open(f"{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/hls/{self.jobCodec}/master.m3u8") as playlistFile:
                 masterLines = playlistFile.readlines()
@@ -248,7 +251,7 @@ class TranscodingJob(Job):
                         f'#EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID="audio-1",NAME="{languages.get(part2b=audioStreamLanguage).name}",DEFAULT={"YES" if audioStreamLanguage == "eng" else "NO"},FORCED=NO,URI="../audio/1/{audioStreamLanguage}.m3u8",LANGUAGE="{audioStreamLanguage}"\n',
                         f'#EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID="audio-2",NAME="{languages.get(part2b=audioStreamLanguage).name}",DEFAULT={"YES" if audioStreamLanguage == "eng" else "NO"},FORCED=NO,URI="../audio/2/{audioStreamLanguage}.m3u8",LANGUAGE="{audioStreamLanguage}"\n'
                     ]
-                    if audioMedia not in masterLines:
+                    if audioMedia[0] not in masterLines:
                         masterLines.extend(audioMedia)
             system(f'mv "{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/hls/{self.jobCodec}/master.m3u8" "{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/hls/{self.jobCodec}/master_original.m3u8"')
             with open(f'{self.dashboard.fileSystem.basePath}/processed/{self.jobPath}/hls/{self.jobCodec}/master.m3u8', "w") as playlistFile:
@@ -317,7 +320,21 @@ class TranscodingJob(Job):
         if not path.exists(f"{self.dashboard.fileSystem.basePath}/misc/{self.jobPath}/stats_{self.jobCodec}.sql"):
             self.loadProgress()
             episodePath = self.dashboard.fileSystem.getFile(f"processed/{self.jobPath}/{self.jobCodecEpisodeName}")
-            self.jobSubprocess = subprocess.Popen([f"../scripts/ffmpeg-stats.sh", episodePath, f"{self.dashboard.fileSystem.basePath}/misc/{self.jobPath}/stats_{self.jobCodec}.sql", f"{self.jobShowID}-{self.jobEpisodeIndex}", str(self.jobCodecEnum), str(self.jobSrcFramerate)], stdin=DEVNULL, stdout=DEVNULL, stderr=DEVNULL)
+            videoBitrate = 0
+            if self.jobCodec == "x264":
+                videoBitrate = int(subprocess.getoutput(f'ffprobe -i "{episodePath}" -v quiet -select_streams v:0 -show_entries stream=bit_rate -hide_banner -of default=noprint_wrappers=1:nokey=1'))
+            elif self.jobCodec == "vp9":
+                videoBitrate = subprocess.getoutput(f'ffprobe "{episodePath}" -v quiet -select_streams v:0 -show_entries stream=index:stream_tags=BIT_RATE -hide_banner -of default=noprint_wrappers=1:nokey=1')
+                if "\n" in videoBitrate:
+                    videoBitrate = int(videoBitrate[(videoBitrate.index("\n") + 1):-1]) * 1000
+            audioBitrate = 0
+            if self.jobCodec == "x264":
+                audioBitrate = int(subprocess.getoutput(f'ffprobe -i "{episodePath}" -v quiet -select_streams a:0 -show_entries stream=bit_rate -hide_banner -of default=noprint_wrappers=1:nokey=1'))
+            elif self.jobCodec == "vp9":
+                audioBitrate = subprocess.getoutput(f'ffprobe "{episodePath}" -v quiet -select_streams a:0 -show_entries stream=index:stream_tags=BIT_RATE -hide_banner -of default=noprint_wrappers=1:nokey=1')
+                if "\n" in audioBitrate:
+                    audioBitrate = int(audioBitrate[(audioBitrate.index("\n") + 1):-1]) * 1000
+            self.jobSubprocess = subprocess.Popen([f"../scripts/ffmpeg-stats.sh", episodePath, f"{self.dashboard.fileSystem.basePath}/misc/{self.jobPath}/stats_{self.jobCodec}.sql", f"{self.jobShowID}-{self.jobEpisodeIndex}", str(self.jobCodecEnum), str(self.jobSrcFramerate), str(videoBitrate), str(audioBitrate)], stdin=DEVNULL, stdout=DEVNULL, stderr=DEVNULL)
             self.jobSubprocess.wait()
         self.endSection()
 

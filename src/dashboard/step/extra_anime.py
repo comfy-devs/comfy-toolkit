@@ -6,8 +6,8 @@ from util.api import fetchAnilist, fetchMAL
 def stepExtraAnime(showID, media, mediaMAL):
     media["title"]["romaji"] = media["title"]["romaji"].replace('\'', '\\\'')
     media["description"] = media["description"].replace('\'', '\\\'')
-    print(f'''INSERT INTO shows (id, title, altTitles, synopsis, episodes, type, status, genres, tags, rating, `group`, season, presets, location, timestamp)
-VALUES ('{showID}', '', '{media["title"]["romaji"]}', '{media["description"]}', {media["episodes"]}, {media["format"]}, {media["status"]}, {media["genres"]}, 1
+    print(f'''INSERT INTO shows (id, title, altTitles, synopsis, episodes, type, format, status, genres, tags, rating, `group`, season, presets, location, timestamp)
+VALUES ('{showID}', '{media["title"]["romaji"]}', '', '{media["description"]}', {media["episodes"]}, 0, {media["format"]}, {media["status"]}, {media["genres"]}, 1
 , 0, NULL, NULL, 4, 0, {mediaMAL['timestamp']});\n''')
 
     selection = input("> Edit? [n]: ")
@@ -19,8 +19,8 @@ VALUES ('{showID}', '', '{media["title"]["romaji"]}', '{media["description"]}', 
         showTitle = media["title"]["romaji"] if showTitle == "" else showTitle
         showEpisodeCount = input(f"> Show episode count? [{colorize('gray', media['episodes'])}]: ")
         showEpisodeCount = media["episodes"] if showEpisodeCount == "" else showEpisodeCount
-        animeType = input(f"> Anime type? [{colorize('gray', media['format'])}]: ")
-        animeType = media["format"] if animeType == "" else animeType
+        showFormat = input(f"> Show type? [{colorize('gray', media['format'])}]: ")
+        showFormat = media["format"] if showFormat == "" else showFormat
         showStatus = input(f"> Show status? [{colorize('gray', media['status'])}]: ")
         showStatus = media["status"] if showStatus == "" else showStatus
         showGenres = input(f"> Show genres? [{colorize('gray', media['genres'])}]: ")
@@ -40,8 +40,8 @@ VALUES ('{showID}', '', '{media["title"]["romaji"]}', '{media["description"]}', 
         showTimestamp = input(f"> Show timestamp? [{colorize('gray', mediaMAL['timestamp'])} (episode {colorize('gray', mediaMAL['_lastEpisode'])})]: ")
         showTimestamp = mediaMAL['timestamp'] if showTimestamp == "" else showTimestamp
         
-        print(f'''INSERT INTO shows (id, title, altTitles, synopsis, episodes, type, status, genres, tags, rating, `group`, season, presets, location, timestamp)
-    VALUES ('{showID}', '{showTitle}', '', '{media["description"]}', {showEpisodeCount}, {animeType}, {showStatus}, {showGenres}, {showTags}
+        print(f'''INSERT INTO shows (id, title, altTitles, synopsis, episodes, type, format, status, genres, tags, rating, `group`, season, presets, location, timestamp)
+    VALUES ('{showID}', '{showTitle}', '', '{media["description"]}', {showEpisodeCount}, 0, {showFormat}, {showStatus}, {showGenres}, {showTags}
     , {showRating}, {showGroup}, {showSeason}, {showPresets}, {showLocation}, {showTimestamp});\n''')
         input("Press enter...")
 
@@ -66,7 +66,7 @@ def stepExtraEpisodesAnime(showID, start, length, mediaMAL=None):
     print(result)
     input("Press enter...")
 
-def stepExtraShowAnime(anilistID, malID, partial = False):
+def stepExtraShowAnime(showID, anilistID, malID, partial = False):
     media = fetchAnilist(anilistID)
     mediaMAL = fetchMAL(malID, media["episodes"])
 

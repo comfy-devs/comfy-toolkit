@@ -87,7 +87,7 @@ def printMainUI(dashboard):
                     opt_ani_id = opt_id if opt_ani_id == "" else opt_ani_id
                     opt_mal_id = input(f"> Show ID? (ID from myanimelist.net) [{opt_id}]: ")
                     opt_mal_id = opt_id if opt_mal_id == "" else opt_mal_id
-                    stepExtraShowAnime(opt_id, opt_mal_id)
+                    stepExtraShowAnime(opt_id, opt_ani_id, opt_mal_id)
                 else:
                     stepExtraShowOther(opt_id)
             
@@ -175,7 +175,7 @@ def printMainUI(dashboard):
                 opt_ani_id = opt_id if opt_ani_id == "" else opt_ani_id
                 opt_mal_id = input(f"> Show ID? (ID from myanimelist.net) [{opt_id}]: ")
                 opt_mal_id = opt_id if opt_mal_id == "" else opt_mal_id
-                stepExtraShowAnime(opt_id, opt_mal_id)
+                stepExtraShowAnime(opt_id, opt_ani_id, opt_mal_id)
             else:
                 stepExtraShowOther(opt_id)
         elif selection == "2":
@@ -189,7 +189,7 @@ def printMainUI(dashboard):
                 opt_ani_id = opt_id if opt_ani_id == "" else opt_ani_id
                 opt_mal_id = input(f"> Show ID? (ID from myanimelist.net) [{opt_id}]: ")
                 opt_mal_id = opt_id if opt_mal_id == "" else opt_mal_id
-                stepExtraShowAnime(opt_id, opt_mal_id, True)
+                stepExtraShowAnime(opt_id, opt_ani_id, opt_mal_id, True)
             else:
                 stepExtraShowOther(opt_id)
         elif selection == "3":

@@ -6,7 +6,9 @@ def stepExtraOther(showID):
     showTitle = input(f"> Show title? [{colorize('gray', 'title')}]: ")
     showTitle = "title" if showTitle == "" else showTitle
     showEpisodeCount = input(f"> Show episode count? [{colorize('gray', '1')}]: ")
-    showEpisodeCount = 1 if showEpisodeCount == "" else showEpisodeCount
+    showEpisodeCount = '1' if showEpisodeCount == "" else showEpisodeCount
+    showFormat = input(f"> Show type? [{colorize('gray', '0')}]: ")
+    showFormat = '0' if showFormat == "" else showFormat
     showStatus = input(f"> Show status? [{colorize('gray', '1')}]: ")
     showStatus = "1" if showStatus == "" else showStatus
     showGenres = input(f"> Show genres? [{colorize('gray', '0')}]: ")
@@ -26,8 +28,8 @@ def stepExtraOther(showID):
     showTimestamp = input(f"> Show timestamp? [{colorize('gray', 'NULL')}]: ")
     showTimestamp = 'NULL' if showTimestamp == "" else showTimestamp
     
-    print(f'''INSERT INTO shows (id, title, altTitles, synopsis, episodes, type, status, genres, tags, rating, `group`, season, presets, location, timestamp)
-VALUES ('{showID}', '{showTitle}', '', 'somebody forgor to fill this out.', {showEpisodeCount}, 0, {showStatus}, {showGenres}, {showTags}
+    print(f'''INSERT INTO shows (id, title, altTitles, synopsis, episodes, type, format, status, genres, tags, rating, `group`, season, presets, location, timestamp)
+VALUES ('{showID}', '{showTitle}', '', 'somebody forgor to fill this out.', {showEpisodeCount}, 1, {showFormat}, {showStatus}, {showGenres}, {showTags}
 , {showRating}, {showGroup}, {showSeason}, {showPresets}, {showLocation}, {showTimestamp});\n''')
     input("Press enter...")
 

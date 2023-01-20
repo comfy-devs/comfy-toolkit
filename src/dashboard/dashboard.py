@@ -2,6 +2,7 @@ import os
 import feedparser, re, subprocess
 from os import system, path
 from util.fs import ComfyFilesystem
+from util.announcer import ComfyAnnouncer
 from util.general import setInterval, colorize
 from ui.main import printMainUI
 from ui.jobs import printJobsUI
@@ -14,6 +15,7 @@ class Dashboard:
     def __init__(self):
         self.currentPath = os.path.dirname(os.path.realpath(__file__))
         self.fileSystem = ComfyFilesystem()
+        self.announcer = ComfyAnnouncer()
         self.jobCollections = []
         self.jobsUIEnabled = False
         self.jobsUIShowCompleted = True
@@ -27,6 +29,10 @@ class Dashboard:
             printJobsUI(self)
 
         self.checkJobs()
+        
+    def asyncAnnounce(self):
+        if self.announcer.enabled == True:
+            self.announcer.announce(self)
 
     def addJobCollection(self, jobCollection):
         # TODO: Support saving regular jobs
@@ -146,6 +152,7 @@ class Dashboard:
     def run(self):
         system("clear")
         setInterval(1, self.asyncRun)
+        setInterval(10, self.asyncAnnounce)
 
         print("Importing SSH keys...")
         if path.exists(f"/usr/src/comfy/ssh/id_rsa"):

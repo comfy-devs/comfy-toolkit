@@ -5,10 +5,12 @@ services:
     volumes:
       - ${COMFY_CORE_PATH}:/usr/src/comfy
       - ${COMFY_TORRENTS_PATH}:/usr/src/torrents
-      - G:\bcs:/usr/src/torrents/bcs
       - ${COMFY_DATA_PATH}:/usr/src/data
     environment:
       COMFY_TMPFS_SIZE: "${COMFY_TMPFS_SIZE}"
+      COMFY_JOBS_ENDPOINT: "${COMFY_JOBS_ENDPOINT}"
+      COMFY_JOBS_KEY: "${COMFY_JOBS_KEY}"
+      COMFY_JOBS_SERVER: "${COMFY_JOBS_SERVER}"
     build:
       context: ./
       dockerfile: .docker/images/comfy-toolkit/Dockerfile

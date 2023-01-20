@@ -5,14 +5,14 @@ from job.types.transcoding import TranscodingJob
 def stepTranscode(dashboard, opt_id, i=None):
     opt_codec = input("> Encoding codec? (x264/vp9) [x264]: ")
     opt_codec = "x264" if opt_codec == "" else opt_codec
-    opt_tune = input("> Encoding tune? (animation/film) [animation]: ")
+    opt_tune = input("> Encoding tune? (animation/film) [animation]: ") if opt_codec == "x264" else "default"
     opt_tune = "animation" if opt_tune == "" else opt_tune
 
     opt_min_bitrate = ""
     opt_bitrate = ""
     opt_max_bitrate = ""
     if opt_codec == "vp9":
-        entries = list(filter(None, subprocess.getoutput(f'find {dashboard.fileSystem.basePath}/processed/{opt_id}/ -type f -name "*.mp4" -printf "%P\\n" | sort').split("\n")))
+        entries = list(filter(None, subprocess.getoutput(f'find {dashboard.fileSystem.basePath}/processed/{opt_id}/ -type f -name "episode_x264.mp4" -printf "%P\\n" | sort').split("\n")))
         all_bitrate = 0
         if len(entries) > 0:
             print(f"Listing bitrates of previous transcodes ({len(entries)})...")
